@@ -10,7 +10,7 @@ import {
   CreditCard,
   Clock,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { StickyBanner } from "@/components/layout/StickyBanner";
 import FloatingLines from "@/components/FloatingLines";
 import Mnavbar from "@/components/Mnavbar";
@@ -157,29 +157,64 @@ export default function HomePage() {
       {/* =====================================================
           HOW IT WORKS
           ===================================================== */}
-      <section id="how" className="py-24">
-        <BlurredCircle classname="-left-20 top-10" />
-        <SectionHeader
-          title="How It Works"
-          subtitle="Get started in minutes."
-        />
+      <section id="how" className="border-t border-gray-600/30 pt-16 text-white">
+        <div className="mx-auto max-w-7xl px-6">
 
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 md:grid-cols-3">
-          <StepCard
-            step="01"
-            title="Create Account"
-            desc="Sign up in seconds and create your workspace."
-          />
-          <StepCard
-            step="02"
-            title="Add Students"
-            desc="Register students and configure subscriptions."
-          />
-          <StepCard
-            step="03"
-            title="Track & Grow"
-            desc="Monitor analytics and automate reminders."
-          />
+          {/* Header */}
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-4xl font-bold tracking-tight sm:text-4xl">
+              How It Works
+            </h2>
+            <p className="mt-4 text-lg text-gray-400">
+              Launch your digital library system in three simple steps.
+              No technical expertise required.
+            </p>
+          </div>
+
+          {/* Steps Grid */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 border border-gray-700/30 divide-y md:divide-y-0 md:divide-x divide-gray-700/30">
+
+            {/* Step 1 */}
+            <div className="p-10">
+              <div className="text-sm font-semibold text-violet-400">STEP 01</div>
+              <h3 className="mt-4 text-2xl font-semibold">
+                Create Your Account
+              </h3>
+              <p className="mt-4 text-gray-400 text-sm leading-relaxed">
+                Sign up in seconds and set up your institution profile.
+                Customize library rules, working hours, and categories
+                to match your workflow.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="p-10">
+              <div className="text-sm font-semibold text-violet-400">STEP 02</div>
+              <h3 className="mt-4 text-2xl font-semibold">
+                Add Students & Books
+              </h3>
+              <p className="mt-4 text-gray-400 text-sm leading-relaxed">
+                Import students, register books, and configure
+                subscriptions. Everything is centralized in a
+                clean and intuitive dashboard.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="p-10">
+              <div className="text-sm font-semibold text-violet-400">STEP 03</div>
+              <h3 className="mt-4 text-2xl font-semibold">
+                Track, Automate & Grow
+              </h3>
+              <p className="mt-4 text-gray-400 text-sm leading-relaxed">
+                Monitor borrowing activity, automate reminders,
+                manage fines, and gain insights through advanced
+                analytics to scale efficiently.
+              </p>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
@@ -215,45 +250,99 @@ export default function HomePage() {
       {/* =====================================================
           PRICING
           ===================================================== */}
-      <section id="pricing" className="py-24">
-        <BlurredCircle classname="left-0 top-50" />
-        <SectionHeader
-          title="Simple Pricing"
-          subtitle="Transparent plans for every size."
-        />
+      <section id="pricing" className="">
+        <div className="mx-auto max-w-7xl px-6">
 
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-6 md:grid-cols-3">
-          <PricingCard
-            title="Starter"
-            price="Free"
-            features={[
-              "Up to 50 students",
-              "Basic analytics",
-              "Email support",
-            ]}
-          />
+          {/* Header */}
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-4xl font-bold tracking-tight font-arial text-white sm:text-4xl">
+              Find the <span className="text-pink-400/70">Perfect Plan</span> for Your Needs
+            </h2>
+            <p className="mt-2 text-sm text-gray-500">
+              Flexible plans designed for libraries and growing institutions.
+              Start free and upgrade when you’re ready.
+            </p>
 
-          <PricingCard
-            highlighted
-            title="Pro"
-            price="₹999 / month"
-            features={[
-              "Unlimited students",
-              "Advanced analytics",
-              "WhatsApp reminders",
-              "Priority support",
-            ]}
-          />
+            {/* Billing Hint */}
+            <p className="mt-3 text-sm text-violet-600 font-medium">
+              Save 20% with annual billing
+            </p>
+          </div>
 
-          <PricingCard
-            title="Enterprise"
-            price="Custom"
-            features={[
-              "Custom integrations",
-              "Dedicated support",
-              "Onboarding assistance",
-            ]}
-          />
+          {/* Pricing Grid */}
+          <div className="mt-10 grid grid-cols-1 gap-2 md:grid-cols-3">
+
+            {/* Starter Plan */}
+            <div className="flex flex-col border border-gray-700/80 p-8 shadow-sm transition hover:shadow-md">
+              <h3 className="text-lg font-semibold text-white">Starter</h3>
+              <p className="mt-4 text-4xl font-bold text-gray-300">Free</p>
+              <p className="mt-2 text-sm text-gray-500">
+                Perfect for small libraries getting started.
+              </p>
+
+              <ul className="mt-8 space-y-4 text-sm text-gray-600 flex-1">
+                <li>✔ Up to 50 students</li>
+                <li>✔ Basic analytics dashboard</li>
+                <li>✔ Issue & return tracking</li>
+                <li>✔ Email support</li>
+              </ul>
+
+              <button className="cursor-pointer mt-8 rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800">
+                Get Started Free
+              </button>
+            </div>
+
+            {/* Pro Plan (Highlighted) */}
+            <div className="relative flex flex-col  border-2 border-violet-600/60 p-8 shadow-lg scale-105">
+
+              {/* Badge */}
+              <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-violet-600 px-4 py-1 text-xs font-semibold text-white">
+                Most Popular
+              </span>
+
+              <h3 className="text-lg font-semibold text-white">Pro</h3>
+              <p className="mt-4 text-4xl font-bold text-white">
+                ₹999 <span className="text-base font-medium text-gray-500">/month</span>
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                Best for growing institutions managing large collections.
+              </p>
+
+              <ul className="mt-8 space-y-4 text-sm text-gray-700 flex-1">
+                <li>✔ Unlimited students</li>
+                <li>✔ Advanced analytics & reports</li>
+                <li>✔ WhatsApp reminders</li>
+                <li>✔ Fine management system</li>
+                <li>✔ Priority support</li>
+              </ul>
+
+              <button className="cursor-pointer mt-8 rounded-lg bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-violet-700">
+                Upgrade to Pro
+              </button>
+            </div>
+
+            {/* Enterprise Plan */}
+            <div className="flex flex-col border border-gray-700/80 p-8 shadow-sm transition hover:shadow-md">
+              <h3 className="text-lg font-semibold text-white">Enterprise</h3>
+              <p className="mt-4 text-4xl font-bold text-white">Custom</p>
+              <p className="mt-2 text-sm text-gray-500">
+                Tailored solutions for multi-branch institutions.
+              </p>
+
+              <ul className="mt-8 space-y-4 text-sm text-gray-600 flex-1">
+                <li>✔ Custom integrations</li>
+                <li>✔ Dedicated account manager</li>
+                <li>✔ Staff onboarding & training</li>
+                <li>✔ SLA & priority support</li>
+              </ul>
+
+              <button className="cursor-pointer mt-8 rounded-lg border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-300 transition-all hover:text-black hover:bg-gray-100">
+                Contact Sales
+              </button>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
