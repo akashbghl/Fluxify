@@ -76,9 +76,9 @@ export function StickyBanner({
         "relative z-40 flex min-h-6 w-full items-center justify-center px-4 py-1",
         className
       )}
-      initial={{ y: -100, opacity: 0 }}
+      initial={{ x: -1000, opacity: 0 }}
       animate={{
-        y: bannerVisible ? 0 : -100,
+        x: bannerVisible ? 0 : -1000,
         opacity: bannerVisible ? 1 : 0,
       }}
       transition={{
@@ -91,7 +91,7 @@ export function StickyBanner({
 
       {/* Close Button */}
       <motion.button
-        initial={{ scale: 0, opacity: 0 }}
+        initial={{scale: 0, opacity: 0 }}
         animate={{
           scale: bannerVisible ? 1 : 0,
           opacity: bannerVisible ? 1 : 0,
@@ -102,7 +102,7 @@ export function StickyBanner({
         }}
         onClick={handleClose}
         aria-label="Close banner"
-        className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 hover:scale-110 hover:bg-white/10 transition"
+        className="absolute cursor-pointer right-4 top-1/2 -translate-y-1/2 rounded-full p-1 hover:scale-110 hover:bg-white/10 transition"
       >
         <CloseIcon className="h-4 w-4 text-white" />
       </motion.button>

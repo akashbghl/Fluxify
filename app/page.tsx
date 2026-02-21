@@ -15,7 +15,9 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import {StickyBanner} from "@/components/layout/StickyBanner";
+import { StickyBanner } from "@/components/layout/StickyBanner";
+import FloatingLines from "@/components/FloatingLines";
+import Mnavbar from "@/components/Mnavbar";
 
 /* =====================================================
    MAIN PAGE
@@ -24,7 +26,7 @@ import {StickyBanner} from "@/components/layout/StickyBanner";
 export default function HomePage() {
   const router = useRouter();
   const [loggedIn, setLoggedIn] = useState(false);
-   const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -37,89 +39,50 @@ export default function HomePage() {
       {/* Promo Banner */}
       {visible && (
         <StickyBanner
-        isVisible={visible}
-        onClose={() => setVisible(false)}
-        className="bg-gradient-to-r from-green-800/80 to-blue-900/90 text-white text-sm"
-      >
-        🎉 Flat 50% OFF — Use code <b className="mx-2">FLUX50</b> today!
-      </StickyBanner>
+          isVisible={visible}
+          onClose={() => setVisible(false)}
+          className="bg-gradient-to-r from-black/99 via-violet-950 to-black/99 text-white text-sm"
+        >
+          🎉 Flat 50% OFF — Use code <b className="mx-2">FLUX50</b> today!
+        </StickyBanner>
       )}
 
-      {/* =====================================================
-          NAVBAR
-      ===================================================== */}
-      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="text-black" size={22} />
-            <span className="text-lg font-bold tracking-tight cursor-pointer" onClick={() => router.push("/")}>
-              Fluxify.io
-            </span>
-          </div>
-
-          <nav className="hidden items-center gap-6 text-sm text-gray-600 md:flex">
-            <a href="#features" className="hover:text-black">
-              Features
-            </a>
-            <a href="#how" className="hover:text-black">
-              How it works
-            </a>
-            <a href="#pricing" className="hover:text-black">
-              Pricing
-            </a>
-            <a href="#faq" className="hover:text-black">
-              FAQ
-            </a>
-          </nav>
-
-          {
-            loggedIn ?
-              <div>
-                <PrimaryButton onClick={() => router.push("/dashboard")}>
-                  Go to Dashboard
-                </PrimaryButton>
-              </div>
-              :
-              <div className="flex gap-3">
-                <button
-                  onClick={() => router.push("/login")}
-                  className="rounded-md px-4 py-2 text-sm font-medium hover:bg-gray-100"
-                >
-                  Login
-                </button>
-
-                <button
-                  onClick={() => router.push("/register")}
-                  className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-                >
-                  Get Started
-                </button>
-              </div>
-
-          }
-        </div>
-      </header>
 
       {/* =====================================================
           HERO
-      ===================================================== */}
-      <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-6 py-28 text-center">
+          ===================================================== */}
+      <section className="relative min-h-screen bg-black" >
+        <div className="absolute inset-0 z-0">
+          <FloatingLines
+            enabledWaves={["top", "middle", "bottom"]}
+            lineCount={5}
+            lineDistance={5}
+            bendRadius={5}
+            bendStrength={-0.7}
+            interactive={true}
+            parallax={true}
+          />
+        </div>
+        {/* NAVBAR  */}
+        <div className="relative z-20">
+          <Mnavbar />
+        </div>
+        <div className="relative z-10 mx-auto max-w-7xl px-6 py-28 text-center pointer-events-none">
           <Badge>All-in-one Library Management Platform</Badge>
 
-          <h1 className="mt-6 text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+          <h1 className="mt-6 text-4xl font-extrabold font-sans text-white leading-tight sm:text-5xl lg:text-6xl pointer-events-auto">
             Manage Your Library
-            <span className="block text-black">
+            <span className="block text-white">
               Smarter, Faster, Better
             </span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-300 font-cambria">
             Automate student management, fee tracking, attendance,
             reminders and analytics — all in one modern dashboard.
           </p>
 
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
+          <div className="mt-10 flex flex-wrap justify-center gap-4 pointer-events-auto">
             <PrimaryButton onClick={() => router.push("/register")}>
               Start Free Trial <ArrowRight size={16} />
             </PrimaryButton>
@@ -130,8 +93,8 @@ export default function HomePage() {
           </div>
 
           {/* Mock Preview */}
-          <div className="relative mt-16 overflow-hidden rounded-xl border bg-white shadow-xl">
-            <div className="h-90 w-full bg-linear-to-b from-gray-200 to-gray-100 flex items-center justify-center text-gray-500">
+          <div className="relative mt-16 overflow-hidden rounded-xl border border-gray-100/20 shadow-xl">
+            <div className="h-90 w-full bg-linear-to-b rounded-xl from-gray-200/10 to-gray-100/10 flex items-center justify-center text-gray-300">
               Dashboard Preview Placeholder
             </div>
           </div>
@@ -141,7 +104,7 @@ export default function HomePage() {
       {/* =====================================================
           STATS
       ===================================================== */}
-      <section className="border-t bg-white">
+      <section className="border-t border-gray-900">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-6 py-16 sm:grid-cols-4">
           <Stat value={5000} label="Active Students" />
           <Stat value={120} label="Libraries" />
@@ -363,7 +326,7 @@ export default function HomePage() {
 
 function Badge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-block rounded-full bg-black px-4 py-1 text-xs font-medium text-white">
+    <span className="inline-block rounded-full bg-gray-900/50 px-4 py-1 text-xs font-medium text-white">
       {children}
     </span>
   );
@@ -379,7 +342,7 @@ function PrimaryButton({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 rounded-lg bg-black px-6 py-3 text-sm font-medium text-white hover:bg-gray-800 transition"
+      className="flex items-center gap-2 rounded-lg cursor-pointer bg-black px-6 py-3 text-sm font-medium text-white hover:bg-gray-800 transition"
     >
       {children}
     </button>
@@ -396,7 +359,7 @@ function SecondaryButton({
   return (
     <button
       onClick={onClick}
-      className="rounded-lg border px-6 py-3 text-sm font-medium hover:bg-gray-100 transition"
+      className="rounded-lg border border-gray-100/30 text-white cursor-pointer px-6 py-3 text-sm font-medium hover:bg-gray-100 bg-gray-100/10 transition"
     >
       {children}
     </button>
@@ -497,8 +460,8 @@ function PricingCard({
   return (
     <div
       className={`rounded-xl border p-6 shadow-sm ${highlighted
-          ? "border-black bg-gradient-to-br from-gray-600 to-black text-white"
-          : "bg-white"
+        ? "border-black bg-gradient-to-br from-gray-600 to-black text-white"
+        : "bg-white"
         }`}
     >
       <h3 className="font-semibold">{title}</h3>
@@ -515,8 +478,8 @@ function PricingCard({
 
       <button
         className={`mt-6 w-full rounded-md px-4 py-2 text-sm font-medium ${highlighted
-            ? "bg-white text-black hover:bg-gray-200"
-            : "border hover:bg-gray-100"
+          ? "bg-white text-black hover:bg-gray-200"
+          : "border hover:bg-gray-100"
           }`}
       >
         Choose Plan
