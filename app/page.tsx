@@ -221,29 +221,72 @@ export default function HomePage() {
       {/* =====================================================
           TESTIMONIALS
           ===================================================== */}
-      <section className="py-24">
-        <BlurredCircle classname="left-auto top-50" />
-        <SectionHeader
-          title="Loved by Managers"
-          subtitle="Trusted by growing institutions."
-        />
+      <section className="py-20 text-white">
+        <div className="mx-auto max-w-7xl px-6">
 
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-6 md:grid-cols-3">
-          <Testimonial
-            name="Amit Sharma"
-            role="Library Owner"
-            text="Fluxify reduced my admin workload by 70%. Everything is automated."
-          />
-          <Testimonial
-            name="Neha Gupta"
-            role="Manager"
-            text="The dashboard insights help me make faster decisions."
-          />
-          <Testimonial
-            name="Rahul Verma"
-            role="Founder"
-            text="Clean UI, fast performance and great support."
-          />
+          {/* Header */}
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+              Loved by Managers
+            </h2>
+            <p className="mt-2 text-sm text-gray-400">
+              Trusted by growing institutions to simplify operations and scale efficiently.
+            </p>
+          </div>
+
+          {/* Testimonials Grid */}
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 border border-gray-700/30 divide-y md:divide-y-0 md:divide-x divide-gray-700/30">
+
+            {/* Testimonial 1 */}
+            <div className="p-10">
+              <div className="text-sm text-gray-500">Library Owner</div>
+              <h3 className="mt-2 text-xl font-semibold">Amit Sharma</h3>
+
+              <p className="mt-6 text-gray-400 text-sm leading-relaxed">
+                “Fluxify reduced my administrative workload by nearly 70%.
+                Student management, reminders, and fine tracking are fully automated.
+                It feels like having an extra staff member.”
+              </p>
+
+              <div className="mt-6 text-xs text-gray-600">
+                Managing 1,200+ students
+              </div>
+            </div>
+
+            {/* Testimonial 2 */}
+            <div className="p-10">
+              <div className="text-sm text-gray-500">Library Manager</div>
+              <h3 className="mt-2 text-xl font-semibold">Neha Gupta</h3>
+
+              <p className="mt-6 text-gray-400 text-sm leading-relaxed">
+                “The analytics dashboard gives me real-time visibility
+                into borrowing trends and overdue patterns.
+                Decision-making is faster and more data-driven.”
+              </p>
+
+              <div className="mt-6 text-xs text-gray-600">
+                3 Branch Locations
+              </div>
+            </div>
+
+            {/* Testimonial 3 */}
+            <div className="p-10">
+              <div className="text-sm text-gray-500">Founder</div>
+              <h3 className="mt-2 text-xl font-semibold">Rahul Verma</h3>
+
+              <p className="mt-6 text-gray-400 text-sm leading-relaxed">
+                “Clean interface, lightning-fast performance,
+                and outstanding customer support.
+                Implementation was seamless across our entire institution.”
+              </p>
+
+              <div className="mt-6 text-xs text-gray-600">
+                5,000+ active members
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
@@ -251,6 +294,7 @@ export default function HomePage() {
           PRICING
           ===================================================== */}
       <section id="pricing" className="">
+        <BlurredCircle classname="-left-20 -top-30" />
         <div className="mx-auto max-w-7xl px-6">
 
           {/* Header */}
