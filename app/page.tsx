@@ -14,7 +14,7 @@ import { useState } from "react";
 import { StickyBanner } from "@/components/layout/StickyBanner";
 import FloatingLines from "@/components/FloatingLines";
 import Mnavbar from "@/components/Mnavbar";
-import { Badge, FAQItem, FeatureCard, PricingCard, PrimaryButton, SecondaryButton, SectionHeader, Stat, StepCard, Testimonial } from "@/components/ReusableComponentsFunctions";
+import { Badge, FAQItem, FeatureCard, PrimaryButton, SecondaryButton, SectionHeader, Stat} from "@/components/ReusableComponentsFunctions";
 import BlurredCircle from "@/components/ui/BlurredCircle";
 
 /* =====================================================
@@ -58,7 +58,7 @@ export default function HomePage() {
         <div className="relative z-20">
           <Mnavbar />
         </div>
-        <div className="relative z-10 mx-auto max-w-7xl px-6 py-28 text-center pointer-events-none">
+        <div className="relative z-10 mx-auto max-w-7xl px-6 max-md:py-12 sm:py-28 text-center pointer-events-none">
           <Badge>All-in-one Library Management Platform</Badge>
 
           <h1 className="mt-6 text-4xl font-extrabold font-sans text-white leading-tight sm:text-5xl lg:text-6xl pointer-events-auto">
@@ -85,7 +85,7 @@ export default function HomePage() {
 
           {/* Mock Preview */}
           <div className="relative mt-16 overflow-hidden rounded-xl border border-gray-100/20 shadow-xl">
-            <div className="h-90 w-full bg-linear-to-b rounded-xl from-gray-200/10 to-gray-100/10 flex items-center justify-center text-gray-300">
+            <div className="max-md:h-60 h-90 w-full bg-linear-to-b rounded-xl from-gray-200/10 to-gray-100/10 flex items-center justify-center text-gray-300">
               Dashboard Preview Placeholder
             </div>
           </div>
@@ -419,7 +419,7 @@ export default function HomePage() {
       {/* =====================================================
           CTA
       ===================================================== */}
-      <section className="relative overflow-hidden rounded-xl border border-gray-300/20 w-7xl m-auto bg-gray-700/10 mb-10 py-4 text-white">
+      <section className="relative overflow-hidden rounded-xl border border-gray-300/20 sm:w-7xl m-auto bg-gray-700/10 mb-4 py-4 text-white">
         <div className="relative mx-auto max-w-5xl px-6 text-center">
 
           {/* Small Badge */}
