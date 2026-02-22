@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { Eye, EyeOff, Lock, Mail, Loader2 } from "lucide-react";
+import FloatingLines from "@/components/FloatingLines";
 
 /* ======================================================
     Animated Login Page
@@ -75,7 +76,7 @@ export default function LoginPage() {
       }
 
       login(data.user);
-      
+
     } catch (err: any) {
       setError(
         err.message || "Unable to login. Try again."
@@ -93,30 +94,40 @@ export default function LoginPage() {
   ====================================================== */
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-br from-indigo-50 via-white to-purple-50">
-
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <FloatingLines
+          enabledWaves={["top", "middle", "bottom"]}
+          lineCount={5}
+          lineDistance={5}
+          bendRadius={5}
+          bendStrength={-0.7}
+          interactive={true}
+          parallax={true}
+        />
+      </div>
       {/* Floating Background Blobs */}
       <div className="absolute -left-40 -top-40 h-96 w-96 rounded-full bg-purple-300 opacity-30 blur-3xl animate-pulse" />
       <div className="absolute -right-40 -bottom-40 h-96 w-96 rounded-full bg-indigo-300 opacity-30 blur-3xl animate-pulse delay-1000" />
 
       {/* Card */}
       <div
-        className={`relative z-10 w-full max-w-md rounded-2xl border border-white/40 bg-white/70 p-8 shadow-xl backdrop-blur-xl transition-all duration-700
+        className={`relative z-10 w-full max-w-md rounded-2xl border border-white/40 p-8 shadow-xl backdrop-blur-xl transition-all duration-700
         ${mounted ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}
         ${shake ? "animate-shake" : ""}`}
       >
         {/* Logo */}
         <div className="mb-6 flex items-center justify-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-black text-white font-bold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-black font-bold">
             F
           </div>
-          <h1 className="text-xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight text-white">
             Fluxify
           </h1>
         </div>
 
         {/* Heading */}
-        <h2 className="text-center text-2xl font-semibold">
+        <h2 className="text-center text-2xl font-semibold text-white">
           Welcome Back
         </h2>
         <p className="mt-1 text-center text-sm text-gray-500">
@@ -132,7 +143,7 @@ export default function LoginPage() {
           <div className="relative">
             <Mail
               size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white"
             />
 
             <input
@@ -143,7 +154,7 @@ export default function LoginPage() {
                 setEmail(e.target.value)
               }
               required
-              className="w-full rounded-lg border px-10 py-2.5 text-sm outline-none transition focus:border-black focus:ring-2 focus:ring-black/10"
+              className="w-full rounded-lg border border-gray-300 px-10 py-2.5 text-white text-sm outline-none transition focus:border-white focus:ring-2 focus:ring-black/10"
             />
           </div>
 
@@ -151,7 +162,7 @@ export default function LoginPage() {
           <div className="relative">
             <Lock
               size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white"
             />
 
             <input
@@ -162,7 +173,7 @@ export default function LoginPage() {
                 setPassword(e.target.value)
               }
               required
-              className="w-full rounded-lg border px-10 py-2.5 text-sm outline-none transition focus:border-black focus:ring-2 focus:ring-black/10"
+              className="w-full rounded-lg text-white border border-gray-300 px-10 py-2.5 text-sm outline-none transition focus:border-white focus:ring-2 focus:ring-black/10"
             />
 
             <button
@@ -170,7 +181,7 @@ export default function LoginPage() {
               onClick={() =>
                 setShowPass(!showPass)
               }
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
             >
               {showPass ? (
                 <EyeOff size={18} />
@@ -216,7 +227,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => router.push("/register")}
-            className="w-full rounded-md border px-3 py-2 text-sm font-medium hover:bg-gray-100 transition"
+            className="w-full rounded-md border px-3 py-2 text-sm font-medium text-white hover:text-black hover:bg-gray-100 transition"
           >
             Create new account
           </button>
