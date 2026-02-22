@@ -14,7 +14,7 @@ import { useState } from "react";
 import { StickyBanner } from "@/components/layout/StickyBanner";
 import FloatingLines from "@/components/FloatingLines";
 import Mnavbar from "@/components/Mnavbar";
-import { Badge, FAQItem, FeatureCard, PrimaryButton, SecondaryButton, SectionHeader, Stat} from "@/components/ReusableComponentsFunctions";
+import { Badge, FAQItem, FeatureCard, PrimaryButton, SecondaryButton, SectionHeader, Stat } from "@/components/ReusableComponentsFunctions";
 import BlurredCircle from "@/components/ui/BlurredCircle";
 
 /* =====================================================
@@ -393,25 +393,37 @@ export default function HomePage() {
       {/* =====================================================
           FAQ
       ===================================================== */}
-      <section id="faq" className=" py-24">
+      <section id="faq" className="py-24">
         <BlurredCircle classname="left-auto top-50" />
         <SectionHeader
           title="Frequently Asked Questions"
-          subtitle="Quick answers for you."
+          subtitle="Everything you need to know about using Fluxify."
         />
 
-        <div className="mx-auto max-w-4xl px-6 space-y-4">
+        <div className="mx-auto max-w-4xl px-6 space-y-0.5">
           <FAQItem
-            q="Is my data secure?"
-            a="Yes. We use encrypted cookies and secure authentication."
+            q="How secure is my library data?"
+            a="Security is a top priority at Fluxify. We use secure authentication mechanisms, encrypted cookies, and protected database access to ensure your library records, member data, and transaction history remain safe and confidential."
           />
+
           <FAQItem
-            q="Can I export reports?"
-            a="Yes. You can export CSV reports anytime."
+            q="Can I export reports and library data?"
+            a="Yes. Fluxify allows you to export detailed reports in CSV format at any time. This includes circulation records, member activity, overdue summaries, and inventory data—making audits and administrative reviews simple and efficient."
           />
+
           <FAQItem
-            q="Do you provide support?"
-            a="Yes. Email and WhatsApp support are available."
+            q="What kind of support do you provide?"
+            a="We provide responsive support via Email and WhatsApp to assist with onboarding, troubleshooting, and general inquiries. Our goal is to ensure your library operations run smoothly without interruptions."
+          />
+
+          <FAQItem
+            q="Is Fluxify suitable for schools and colleges?"
+            a="Absolutely. Fluxify is designed for schools, colleges, universities, and private institutions. Whether you manage a small academic library or a large collection, the system scales to meet your operational needs."
+          />
+
+          <FAQItem
+            q="Can multiple librarians use the system at the same time?"
+            a="Yes. Fluxify supports multi-user access with role-based permissions. Administrators can assign different access levels to librarians and staff to maintain operational control and accountability."
           />
         </div>
       </section>
@@ -419,7 +431,7 @@ export default function HomePage() {
       {/* =====================================================
           CTA
       ===================================================== */}
-      <section className="relative overflow-hidden rounded-xl border border-gray-300/20 sm:w-7xl m-auto bg-gray-700/10 mb-4 py-4 text-white">
+      <section className="relative overflow-hidden rounded-xl border border-gray-300/20 max-md:mx-4 sm:w-7xl m-auto bg-gray-700/10 mb-4 py-4 text-white">
         <div className="relative mx-auto max-w-5xl px-6 text-center">
 
           {/* Small Badge */}
@@ -428,12 +440,12 @@ export default function HomePage() {
           </span>
 
           {/* Headline */}
-          <h2 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">
+          <h2 className="mt-4 text-2xl font-bold leading-tight sm:text-5xl">
             Transform the way you manage your library
           </h2>
 
           {/* Subheading */}
-          <p className="mt-4 text-lg text-gray-400 max-w-2xl mx-auto">
+          <p className="mt-4 text-sm text-gray-400 max-w-2xl mx-auto">
             Organize books, track borrowers, and gain powerful insights —
             all in one modern, easy-to-use platform built for growing libraries.
           </p>

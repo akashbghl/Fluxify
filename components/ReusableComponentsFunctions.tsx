@@ -169,20 +169,21 @@ export function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-lg border bg-white p-4">
+    <div className="border border-gray-300/30 p-4 rounded-tl-2xl rounded-br-2xl rounded-bl-2xl cursor-pointer"
+    onClick={() => setOpen(!open)}
+    >
       <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between font-medium"
+        className="flex w-full items-center text-gray-100/80 justify-between font-medium"
       >
         {q}
         <ChevronDown
-          size={16}
-          className={`transition ${open ? "rotate-180" : ""}`}
+          size={20}
+          className={`transition-all duration-600 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       {open && (
-        <p className="mt-3 text-sm text-gray-600">{a}</p>
+        <p className="mt-3 text-sm text-white/90 font-sans">{a}</p>
       )}
     </div>
   );
