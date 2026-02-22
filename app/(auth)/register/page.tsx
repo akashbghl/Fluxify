@@ -115,6 +115,14 @@ export default function RegisterPage() {
       <div className="absolute -left-40 -top-40 h-96 w-96 rounded-full bg-emerald-300 opacity-30 blur-3xl animate-pulse" />
       <div className="absolute -right-40 -bottom-40 h-96 w-96 rounded-full bg-indigo-300 opacity-30 blur-3xl animate-pulse delay-1000" />
 
+      {/* Back button  */}
+      <button
+        onClick={() => router.push("/")}
+        className="absolute top-6 left-6 py-1 px-4 border border-white/40 rounded-full text-white cursor-pointer hover:text-white transition"
+      >
+        ← Back
+      </button>
+
       {/* Card */}
       <div
         className={`relative z-10 w-full max-w-md text-white rounded-2xl border border-white/40  p-8 shadow-xl backdrop-blur-xl transition-all duration-700
@@ -122,7 +130,8 @@ export default function RegisterPage() {
         ${shake ? "animate-shake" : ""}`}
       >
         {/* Logo */}
-        <div className="mb-6 flex items-center justify-center gap-2">
+        <div className="mb-6 flex items-center justify-center gap-2 cursor-pointer"
+        onClick={()=> router.push('/')}>
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-black font-bold">
             F
           </div>

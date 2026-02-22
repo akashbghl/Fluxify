@@ -42,7 +42,7 @@ export default function HomePage() {
       {/* =====================================================
           HERO
           ===================================================== */}
-      <section className="relative min-h-screen bg-black" >
+      <section className="relative sm:min-h-screen bg-black" >
         <div className="absolute inset-0 z-0">
           <FloatingLines
             enabledWaves={["top", "middle", "bottom"]}
