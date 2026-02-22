@@ -58,16 +58,14 @@ If you’ve already renewed, kindly ignore this message.
 
     <p>
       This is a gentle reminder that your library subscription
-      <strong>${
-        daysLeft > 0 ? "is about to expire" : "has expired"
-      }</strong>.
+      <strong>${daysLeft >= 0 ? "is about to expire" : "has expired"
+    }</strong>.
     </p>
 
     <p>
       <strong>Expiry Date:</strong> ${expiryDate} <br/>
-      <strong>Days Remaining:</strong> ${
-        daysLeft > 0 ? daysLeft : "Expired"
-      }
+      <strong>Days Remaining:</strong> ${daysLeft >= 0 ? daysLeft : "Expired"
+    }
     </p>
 
     <p>
@@ -147,12 +145,28 @@ async function processReminders(days: number) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  /* ======================================
+     1️⃣ AUTO EXPIRE UPDATE (Bulk)
+  ====================================== */
+
+  const expireResult = await Student.updateMany(
+    {
+      expiryDate: { $lt: today},
+      status: "ACTIVE",
+    },
+    {
+      $set: { status: "EXPIRED" },
+    }
+  );
+
+  console.log(`🔁 Auto expired: ${expireResult.modifiedCount}`);
+
+  /* ======================================
+     2️⃣ EXPIRY REMINDERS
+  ====================================== */
+
   const targetDate = new Date(today);
   targetDate.setDate(today.getDate() + days);
-
-  console.log(
-    `⏰ Finding students expiring before ${targetDate.toDateString()}`
-  );
 
   const students = await Student.find({
     expiryDate: {
@@ -166,13 +180,25 @@ async function processReminders(days: number) {
     const daysLeft = getDaysDiff(
       new Date(student.expiryDate)
     );
+    console.log(`⏰ Reminder for ${student.name} - ${daysLeft} day(s) left`
+    );  
 
-    await notifyStudent(student, daysLeft);
-    sentCount++;
+    // Upcoming reminder
+    if ([3, 1, 0].includes(daysLeft)) {
+      await notifyStudent(student, daysLeft);
+      sentCount++;
+    }
+
+    // Expired reminder (sirf expiry ke next day bhejna ho to)
+    if ([-1,-3,-7,-15,-30].includes(daysLeft)) {
+      await notifyStudent(student, daysLeft);
+      sentCount++;
+    }
   }
 
   return {
-    count: sentCount,
+    expiredUpdated: expireResult.modifiedCount,
+    remindersSent: sentCount,
   };
 }
 

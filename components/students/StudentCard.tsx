@@ -31,6 +31,9 @@ export default function StudentCard({
     (expiry.getTime() - Date.now()) /
       (1000 * 60 * 60 * 24)
   );
+  if(daysLeft < 0 && student.status !== "EXPIRED") {
+    student.status = "EXPIRED";
+  }
 
   return (
     <div className="rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md">
