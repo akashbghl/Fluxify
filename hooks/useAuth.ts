@@ -12,6 +12,7 @@ interface User {
     organizationName: string;
     organizationLogo: string;
     organizationSubscription: "FREE" | "PRO" | "ENTERPRISE" | null;
+    subscriptionExpiry?: string; // ISO date string
 }
 
 export function useAuth() {

@@ -5,6 +5,8 @@ import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
+import { Verified } from "lucide-react";
+import { button, span } from "framer-motion/client";
 
 export default function SettingsPage() {
   const { user, logout, refreshUser } = useAuth();
@@ -64,7 +66,7 @@ export default function SettingsPage() {
       await refreshUser(); // 🔄 Update sidebar/navbar branding
     } catch (err: any) {
       setMessage("❌ Failed to update profile");
-      console.log("Error Message: ",err);
+      console.log("Error Message: ", err);
     } finally {
       setSavingProfile(false);
     }
@@ -161,7 +163,35 @@ export default function SettingsPage() {
               onChange={handleLogoChange}
             />
           </div>
-
+          
+          {/* SUBSRIPTION PLAN  */}
+          <div>
+            <p className="text-sm font-semibold text-gray-800">
+              Subscription Plan:{" "}
+              <span>
+                {user?.organizationSubscription === "PRO"?(
+                  <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                    PRO
+                    <Verified size={12} className="ml-1 text-green-800" />
+                  </span>
+                ):
+                <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
+                  FREE
+                </span>
+                }
+              </span>
+              {user?.organizationSubscription === "FREE" && (
+                <button className="ml-4 rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
+                onClick={() => window.location.href="/dashboard/Subscription"}
+                >Upgrade</button>
+              )}
+              {user?.organizationSubscription === "PRO" && user?.subscriptionExpiry && (
+                <span className="ml-1 text-xs text-gray-500">
+                  (Expires on {new Date(user.subscriptionExpiry).toLocaleDateString()})
+                </span>
+              )}
+            </p>
+          </div>
           {/* Logo Preview */}
           {logoPreview && (
             <div className="flex items-center gap-4 pt-2">

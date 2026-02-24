@@ -5,82 +5,17 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
 const Pricing = () => {
-    const {user} = useAuth();
+    const { user } = useAuth();
     const router = useRouter();
 
-    const loadRazorpayScript = () => {
-        return new Promise<boolean>((resolve) => {
-            const script = document.createElement("script");
-            script.src = "https://checkout.razorpay.com/v1/checkout.js";
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
-    };
-
-    const handlePayment = async () => {
-        try {
-            if (!user) {
-                router.push("/login");
-                toast.error("Please login to upgrade your plan");
-                return;
-            }
-            const scriptLoaded = await loadRazorpayScript();
-
-            if (!scriptLoaded) {
-                alert("Razorpay SDK failed to load.");
-                return;
-            }
-
-            const response = await fetch("/api/initiate-payment", {
-                method: "POST",
-            });
-            console.log(response);
-
-            if (!response.ok) {
-                throw new Error("Failed to initiate payment");
-            }
-
-            const order = await response.json();
-
-            const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-                amount: order.amount,
-                currency: order.currency,
-                name: "Fluxify",
-                description: "Pro Subscription",
-                order_id: order.id,
-
-                handler: async function (res: any) {
-                    const verifyRes = await fetch("/api/verify-payment", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(res),
-                    });
-
-                    const result = await verifyRes.json();
-
-                    if (result.success) {
-                        alert("Payment Successful 🎉");
-                        window.location.reload();
-                    } else {
-                        alert("Payment verification failed ❌");
-                    }
-                },
-
-                theme: {
-                    color: "#7f22fe",
-                },
-            };
-
-            const razorpay = new (window as any).Razorpay(options);
-            razorpay.open();
-
-        } catch (error) {
-            console.error(error);
-            alert("Something went wrong");
+    const handleButtonClick = () => {
+        if (!user) {
+            toast.error("Please log in to upgrade your subscription.");
+            router.push("/login");
+            return;
         }
-    };
+        router.push("/dashboard/Subscription");
+    }
 
     return (
         <div>
@@ -152,7 +87,7 @@ const Pricing = () => {
                             </ul>
 
                             <button
-                                onClick={handlePayment}
+                                onClick={handleButtonClick}
                                 className="cursor-pointer mt-8 rounded-lg bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-violet-700">
                                 Upgrade to Pro
                             </button>

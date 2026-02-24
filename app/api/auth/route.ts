@@ -9,6 +9,7 @@ import {
   loginSchema,
 } from "@/lib/validators";
 import { cookies } from "next/headers";
+import Subscription from "@/models/Subscription";
 
 /**
  * POST → /api/auth
@@ -135,6 +136,10 @@ export async function POST(req: NextRequest) {
         user.organizationId
       ).select("name slug logo plan");
 
+      const subscription = await Subscription.findOne({
+        organization: user.organizationId,
+      }).select("endDate");
+
       /* ======================
           Set Cookie
       ====================== */
@@ -151,6 +156,7 @@ export async function POST(req: NextRequest) {
           organizationName: organization?.name || "Organization",
           organizationLogo: organization?.logo || "",
           organizationSubscription: organization?.plan || null,
+          subscriptionExpiry: subscription?.endDate || null,
         },
       });
 

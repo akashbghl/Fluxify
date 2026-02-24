@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import { requireAuth } from "@/lib/requireAuth";
 import User from "@/models/User";
 import Organization from "@/models/Organization";
+import Subscription from "@/models/Subscription";
 
 export async function GET() {
   try {
@@ -21,7 +22,10 @@ export async function GET() {
     const organization = await Organization.findById(
       user.organizationId
     ).lean();
-    console.log('organizationPlan', organization?.plan);
+    
+    const subscription = await Subscription.findOne({
+      organization: user.organizationId,
+    }).select("endDate").lean();
 
     return NextResponse.json({
       success: true,
@@ -35,6 +39,7 @@ export async function GET() {
         organizationName: organization?.name || "",
         organizationLogo: organization?.logo || "",
         organizationSubscription: organization?.plan,
+        subscriptionExpiry: subscription?.endDate,
       },
     });
   } catch (error: any) {
