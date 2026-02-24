@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import BlurredCircle from '@/components/ui/BlurredCircle';
+import { Verified } from 'lucide-react';
 const page = () => {
     const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
     const { user ,refreshUser} = useAuth();
@@ -188,9 +189,11 @@ const page = () => {
                                     </ul>
 
                                     <button
-                                        onClick={handlePayment}
+                                        onClick={()=>{ if(user?.organizationSubscription !== "PRO"){
+                                            handlePayment()
+                                        }}}
                                         className="cursor-pointer mt-8 rounded-lg bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-violet-700">
-                                        {user?.organizationSubscription === "PRO" ? "Current Plan" : "Upgrade to Pro"}
+                                        {user?.organizationSubscription === "PRO" ? "Already Purchased" : "Upgrade to Pro"}
                                     </button>
                                 </div>
 
