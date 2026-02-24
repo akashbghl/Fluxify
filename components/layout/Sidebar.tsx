@@ -13,6 +13,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Verified,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
@@ -59,7 +60,7 @@ export default function Sidebar() {
   const { logout, user } = useAuth();
 
   const [collapsed, setCollapsed] = useState(false);
-  console.log("ORG LOGO:", user?.organizationLogo);
+  console.log(user);
 
 
 
@@ -94,15 +95,25 @@ export default function Sidebar() {
               {user?.organizationName?.[0]?.toUpperCase() || "O"}
             </div>
           )}
-          
+
 
           {!collapsed && (
             <div className="leading-tight">
-              <p className="text-sm font-semibold truncate max-w-[140px]">
-                {user?.organizationName || "Organization"}
-              </p>
-              <p className="text-xs text-gray-500">
-                Workspace
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-gray-900 truncate max-w-[150px]">
+                  {user?.organizationName || "Organization"}
+                </p>
+
+                {user?.organizationSubscription === "PRO" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+                    PRO
+                    <Verified size={12} className="text-white" />
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-0.5 text-xs font-medium text-gray-500 tracking-wide">
+                WORKSPACE
               </p>
             </div>
           )}

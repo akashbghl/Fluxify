@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
         name: data.organizationName,
         slug,
         email: data.email,
+        plan: "FREE",
       });
 
       /* ======================
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest) {
             organizationId: organization._id,
             organizationName: organization.name,
             organizationLogo: organization.logo,
+            organizationSubscription: organization.plan || null,
           },
         },
         { status: 201 }
@@ -131,7 +133,7 @@ export async function POST(req: NextRequest) {
       // Fetch organization
       const organization = await Organization.findById(
         user.organizationId
-      ).select("name slug logo ");
+      ).select("name slug logo plan");
 
       /* ======================
           Set Cookie
@@ -148,6 +150,7 @@ export async function POST(req: NextRequest) {
           organizationId: user.organizationId,
           organizationName: organization?.name || "Organization",
           organizationLogo: organization?.logo || "",
+          organizationSubscription: organization?.plan || null,
         },
       });
 

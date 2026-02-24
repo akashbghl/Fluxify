@@ -21,6 +21,7 @@ export async function GET() {
     const organization = await Organization.findById(
       user.organizationId
     ).lean();
+    console.log('organizationPlan', organization?.plan);
 
     return NextResponse.json({
       success: true,
@@ -33,6 +34,7 @@ export async function GET() {
         organizationId: organization?._id,
         organizationName: organization?.name || "",
         organizationLogo: organization?.logo || "",
+        organizationSubscription: organization?.plan,
       },
     });
   } catch (error: any) {

@@ -11,6 +11,7 @@ interface User {
     organizationId: string;
     organizationName: string;
     organizationLogo: string;
+    organizationSubscription: "FREE" | "PRO" | "ENTERPRISE" | null;
 }
 
 export function useAuth() {
