@@ -6,6 +6,7 @@ export interface IOrganization {
   email?: string;
   phone?: string;
   logo?: string;
+  plan?: string;
   isActive: boolean;
   createdAt: Date;
 }
@@ -28,12 +29,16 @@ const OrganizationSchema = new Schema<IOrganization>(
 
     email: String,
     phone: String,
-    
+
     logo: {
       type: String,
       default: "",
     },
-
+    plan: {
+      type: String,
+      enum: ["FREE", "PRO", "ENTERPRISE"],
+      default: "FREE",
+    },
 
     isActive: {
       type: Boolean,

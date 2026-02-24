@@ -17,6 +17,7 @@ import Mnavbar from "@/components/Mnavbar";
 import { Badge, FAQItem, FeatureCard, PrimaryButton, SecondaryButton, SectionHeader, Stat } from "@/components/ReusableComponentsFunctions";
 import BlurredCircle from "@/components/ui/BlurredCircle";
 import Pricing from "@/components/landingComponents/Pricing";
+import { ToastContainer } from "react-toastify";
 
 declare global {
   interface Window {
@@ -35,6 +36,7 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen bg-black text-gray-900">
+      <ToastContainer/>
       {/* Promo Banner */}
       {visible && (
         <StickyBanner
@@ -343,7 +345,7 @@ export default function HomePage() {
       {/* =====================================================
           CTA
       ===================================================== */}
-      <section className="relative overflow-hidden rounded-xl border border-gray-300/20 max-md:mx-4 sm:w-7xl m-auto bg-gray-700/10 mb-4 py-4 text-white">
+      <section className="relative overflow-hidden rounded-xl border border-gray-300/20 max-md:mx-4 sm:mx-28 m-auto bg-gray-700/10 mb-4 py-4 text-white">
         <div className="relative mx-auto max-w-5xl px-6 text-center">
 
           {/* Small Badge */}
