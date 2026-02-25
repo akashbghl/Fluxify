@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
         await Subscription.findOneAndUpdate(
             {
                 organization: organizationId,
-                status: "PENDING",
             },
             {
+                status: "PENDING",
                 $set: {
                     plan,
                     razorpayOrderId: order.id,
