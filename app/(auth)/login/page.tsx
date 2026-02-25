@@ -13,7 +13,7 @@ import FloatingLines from "@/components/FloatingLines";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, user } = useAuth();
+  const { user } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,8 +74,8 @@ export default function LoginPage() {
           data.message || "Invalid credentials"
         );
       }
+      router.push("/dashboard");
 
-      login(data.user);
 
     } catch (err: any) {
       setError(

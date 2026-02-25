@@ -136,7 +136,7 @@ export default function RegisterPage() {
             F
           </div>
           <h1 className="text-xl font-bold text-white tracking-tight">
-            FluxiFy
+            Fluxify
           </h1>
         </div>
 

@@ -18,6 +18,7 @@ import { Badge, FAQItem, FeatureCard, PrimaryButton, SecondaryButton, SectionHea
 import BlurredCircle from "@/components/ui/BlurredCircle";
 import Pricing from "@/components/landingComponents/Pricing";
 import { ToastContainer } from "react-toastify";
+import { useAuth } from "@/hooks/useAuth";
 
 declare global {
   interface Window {
@@ -32,11 +33,12 @@ declare global {
 export default function HomePage() {
   const router = useRouter();
   const [visible, setVisible] = useState(true);
+  const { user } = useAuth();
 
 
   return (
     <div className="relative min-h-screen bg-black text-gray-900">
-      <ToastContainer/>
+      <ToastContainer />
       {/* Promo Banner */}
       {visible && (
         <StickyBanner
@@ -84,7 +86,13 @@ export default function HomePage() {
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-4 pointer-events-auto">
-            <PrimaryButton onClick={() => router.push("/register")}>
+            <PrimaryButton onClick={() => {
+              if (!user) {
+                router.push("/register")
+              } else {
+                router.push("/dashboard");
+              }
+            }}>
               Start Free Trial <ArrowRight size={16} />
             </PrimaryButton>
 
@@ -300,8 +308,8 @@ export default function HomePage() {
         </div>
       </section>
 
-        {/* PRICING  */}
-      <Pricing/>
+      {/* PRICING  */}
+      <Pricing />
 
 
       {/* =====================================================
@@ -380,7 +388,14 @@ export default function HomePage() {
           {/* CTA Buttons */}
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
             <button
-              onClick={() => router.push("/register")}
+              onClick={() => {
+                if (!user) {
+                  router.push("/register")
+                }
+                else {
+                  router.push("/dashboard");
+                }
+              }}
               className="rounded-xl cursor-pointer bg-gradient-to-r from-violet-500 to-pink-500 px-8 py-4 text-sm font-semibold text-white shadow-lg transition hover:scale-105 hover:shadow-xl"
             >
               Start Free Trial

@@ -27,25 +27,29 @@ export function useAuth() {
     ============================ */
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
+        async function loadUser() {
+            try {
+                const res = await fetch("/api/auth/me", {
+                    credentials: "include",
+                });
 
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        } else {
-            setUser(null);
+                const data = await res.json();
+
+                if (data.success) {
+                    setUser(data.user);
+                } else {
+                    setUser(null);
+                }
+            } catch {
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
         }
 
-        setLoading(false);
+        loadUser();
     }, []);
 
-    /* ============================
-        Login
-    ============================ */
-
-    const login = (user: User) => {
-        localStorage.setItem("user", JSON.stringify(user));
-        setUser(user);
-    };
 
     /* ============================
         Logout
@@ -60,8 +64,6 @@ export function useAuth() {
         } catch {
             // ignore network errors
         }
-
-        localStorage.removeItem("user");
         setUser(null);
 
         // Hard redirect so middleware re-checks cookie
@@ -83,7 +85,6 @@ export function useAuth() {
         user,
         loading,
         isAuthenticated: !!user,
-        login,
         logout,
         refreshUser,
     };
