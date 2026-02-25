@@ -219,3 +219,39 @@ export function Stat({ value, label }: { value: number; label: string }) {
   );
 }
 
+export function StatCard({
+  title,
+  value,
+  icon,
+  gradient,
+}: {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  gradient: string;
+}) {
+  return (
+    <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl border bg-white p-3 sm:p-4 shadow-sm transition hover:shadow-md">
+    <div
+        className={`absolute inset-0 opacity-10 bg-gradient-to-br ${gradient}`}
+      />
+
+      <div className="relative flex items-center justify-between">
+        <div>
+          <p className="text-xs text-gray-500">
+            {title}
+          </p>
+          <p className="mt-1 text-xl sm:text-2xl font-semibold">
+            {value}
+          </p>
+        </div>
+
+        <div
+          className={`rounded-xl bg-gradient-to-br ${gradient} p-3 text-white`}
+        >
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
+}

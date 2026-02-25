@@ -44,6 +44,11 @@ const navItems = [
     icon: CalendarCheck,
   },
   {
+    label: "Seat Chart",
+    href: "/dashboard/seatchart",
+    icon: CalendarCheck,
+  },
+  {
     label: "Settings",
     href: "/dashboard/settings",
     icon: Settings,

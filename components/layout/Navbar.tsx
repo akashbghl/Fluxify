@@ -191,7 +191,7 @@ export default function Navbar() {
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-xl border bg-white shadow-lg">
+            <div className="absolute z-50 right-0 mt-2 w-48 rounded-xl border bg-white shadow-lg">
               <button
                 onClick={() =>
                   (window.location.href =

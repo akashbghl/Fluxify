@@ -34,13 +34,20 @@ export async function GET() {
         name: user.name,
         email: user.email,
         role: user.role,
-
         organizationId: organization?._id,
         organizationName: organization?.name || "",
         organizationLogo: organization?.logo || "",
         organizationSubscription: organization?.plan,
         subscriptionExpiry: subscription?.endDate,
         subscriptionStatus : subscription ? subscription.status : null,
+      },
+      organization: {
+        _id: organization?._id,
+        name: organization?.name,
+        slug: organization?.slug,
+        plan: organization?.plan,
+        isConfigured: organization?.isConfigured,
+        seatConfig: organization?.seatConfig,
       },
     });
   } catch (error: any) {
