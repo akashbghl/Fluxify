@@ -57,7 +57,9 @@ const Pricing = () => {
                                 <li>✔ Email support</li>
                             </ul>
 
-                            <button className="cursor-pointer mt-8 rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800">
+                            <button 
+                            onClick={handleButtonClick}
+                            className="cursor-pointer mt-8 rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800">
                                 Get Started Free
                             </button>
                         </div>

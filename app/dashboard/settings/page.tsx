@@ -6,7 +6,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
 import { Verified } from "lucide-react";
-import { button, span } from "framer-motion/client";
+import { button, div, span } from "framer-motion/client";
 
 export default function SettingsPage() {
   const { user, logout, refreshUser } = useAuth();
@@ -117,6 +117,7 @@ export default function SettingsPage() {
     setOrganizationLogo(value);
     setLogoPreview(value);
   };
+  const isProActive = user?.organizationSubscription === "PRO" && user.subscriptionStatus === "ACTIVE";
 
   return (
     <ProtectedRoute>
@@ -163,32 +164,55 @@ export default function SettingsPage() {
               onChange={handleLogoChange}
             />
           </div>
-          
+
           {/* SUBSRIPTION PLAN  */}
           <div>
             <p className="text-sm font-semibold text-gray-800">
               Subscription Plan:{" "}
               <span>
-                {user?.organizationSubscription === "PRO"?(
+                {user?.organizationSubscription === "PRO" ? (
                   <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
                     PRO
                     <Verified size={12} className="ml-1 text-green-800" />
                   </span>
-                ):
-                <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
-                  FREE
-                </span>
+                ) :
+                  <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
+                    FREE
+                  </span>
                 }
               </span>
               {user?.organizationSubscription === "FREE" && (
                 <button className="ml-4 rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
-                onClick={() => window.location.href="/dashboard/Subscription"}
+                  onClick={() => window.location.href = "/dashboard/Subscription"}
                 >Upgrade</button>
               )}
-              {user?.organizationSubscription === "PRO" && user?.subscriptionExpiry && (
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-800 font-semibold flex items-center gap-1">
+              Subscription Status:{" "}
+              <span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${user?.subscriptionStatus === "ACTIVE"
+                ? "bg-green-100 text-green-800"
+                : user?.subscriptionStatus === "EXPIRED"
+                  ? "bg-red-100 text-red-800"
+                  : "bg-gray-100 text-gray-800"
+                }`}>
+                {user?.subscriptionStatus}
+              </span>
+              {isProActive && user?.subscriptionExpiry && (
                 <span className="ml-1 text-xs text-gray-500">
                   (Expires on {new Date(user.subscriptionExpiry).toLocaleDateString()})
                 </span>
+              )}
+              {(user?.subscriptionStatus === "EXPIRED") && (
+                <div>
+                  <span>
+                    ({user.subscriptionExpiry ? new Date(user.subscriptionExpiry).toLocaleDateString() : "N/A"})
+                  </span>
+                  <button className="ml-2 px-2 py-1 cursor-pointer rounded-lg bg-gradient-to-r from-blue-500 to-blue-500 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2"
+                    onClick={() => window.location.href = "/dashboard/Subscription"}
+                  >Renew</button>
+                </div>
               )}
             </p>
           </div>

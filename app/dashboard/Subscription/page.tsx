@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import BlurredCircle from '@/components/ui/BlurredCircle';
-import { Verified } from 'lucide-react';
 const page = () => {
     const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
-    const { user ,refreshUser} = useAuth();
+    const { user, refreshUser } = useAuth();
     const router = useRouter();
 
     const loadRazorpayScript = () => {
@@ -86,7 +85,11 @@ const page = () => {
             alert("Something went wrong");
         }
     };
-    
+
+    const isProActive =
+        (user?.organizationSubscription === "PRO" &&
+            user.subscriptionStatus === "ACTIVE");
+
     return (
         <ProtectedRoute>
             <div className=" bg-[#0B0F19] text-white px-6 py-16">
@@ -170,11 +173,11 @@ const page = () => {
 
                                     <h3 className="text-lg font-semibold text-white">Pro</h3>
                                     <p className="mt-4 text-4xl font-bold text-white">
-                                        { billing === "monthly" ? (
+                                        {billing === "monthly" ? (
                                             <>₹999 <span className="text-base font-medium text-gray-500">/month</span></>
                                         ) : (
                                             <>₹9990 <span className="text-base font-medium text-gray-500">/year</span></>
-                                        )} 
+                                        )}
                                     </p>
                                     <p className="mt-2 text-sm text-gray-500">
                                         Best for growing institutions managing large collections.
@@ -189,11 +192,22 @@ const page = () => {
                                     </ul>
 
                                     <button
-                                        onClick={()=>{ if(user?.organizationSubscription !== "PRO"){
-                                            handlePayment()
-                                        }}}
-                                        className="cursor-pointer mt-8 rounded-lg bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-violet-700">
-                                        {user?.organizationSubscription === "PRO" ? "Already Purchased" : "Upgrade to Pro"}
+                                        onClick={() => {
+                                            if (!isProActive) {
+                                                handlePayment();
+                                            }
+                                        }}
+                                        disabled={isProActive}
+                                        className={`mt-8 rounded-lg px-6 py-3 text-sm font-semibold text-white transition ${isProActive
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-violet-600 hover:bg-violet-700 cursor-pointer"
+                                            }`}
+                                    >
+                                        {isProActive && user?.subscriptionExpiry
+                                            ? `Already Purchased (valid till ${new Date(
+                                                user.subscriptionExpiry
+                                            ).toLocaleDateString()})`
+                                            : "Upgrade to Pro"}
                                     </button>
                                 </div>
 

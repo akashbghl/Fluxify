@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
 
       const subscription = await Subscription.findOne({
         organization: user.organizationId,
-      }).select("endDate");
+      }).select("endDate status");
 
       /* ======================
           Set Cookie
@@ -157,6 +157,7 @@ export async function POST(req: NextRequest) {
           organizationLogo: organization?.logo || "",
           organizationSubscription: organization?.plan || null,
           subscriptionExpiry: subscription?.endDate || null,
+          subscriptionStatus : subscription ? subscription.status : null,
         },
       });
 

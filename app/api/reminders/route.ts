@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import Student from "@/models/Student";
 import { sendMail } from "@/lib/mail";
 import { sendWhatsAppMessage } from "@/lib/whatsapp";
+import Subscription from "@/models/Subscription";
 
 /* ======================================================
     Utils
@@ -142,16 +143,15 @@ If you’ve already renewed, kindly ignore this message.
 async function processReminders(days: number) {
   await connectDB();
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
+  const now = new Date();
   /* ======================================
      1️⃣ AUTO EXPIRE UPDATE (Bulk)
   ====================================== */
 
   const expireResult = await Student.updateMany(
     {
-      expiryDate: { $lt: today},
+      expiryDate: { $lte: now},
       status: "ACTIVE",
     },
     {
@@ -161,12 +161,26 @@ async function processReminders(days: number) {
 
   console.log(`🔁 Auto expired: ${expireResult.modifiedCount}`);
 
+  // Auto Subscription Expiry Update of Organizations
+  
+  const orgExpireResult = await Subscription.updateMany(
+    { 
+      endDate: { $lte: now },
+      status: "ACTIVE",
+    },
+    {
+      $set: { status: "EXPIRED" },
+    }
+  );
+  console.log(`🔁 Subscriptions auto expired: ${orgExpireResult.modifiedCount}`);
+
+
   /* ======================================
      2️⃣ EXPIRY REMINDERS
   ====================================== */
 
-  const targetDate = new Date(today);
-  targetDate.setDate(today.getDate() + days);
+  const targetDate = new Date(now);
+  targetDate.setDate(now.getDate() + days);
 
   const students = await Student.find({
     expiryDate: {
@@ -198,6 +212,7 @@ async function processReminders(days: number) {
 
   return {
     expiredUpdated: expireResult.modifiedCount,
+    subscriptionExpiredUpdated: orgExpireResult.modifiedCount,
     remindersSent: sentCount,
   };
 }

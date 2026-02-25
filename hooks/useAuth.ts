@@ -13,6 +13,7 @@ interface User {
     organizationLogo: string;
     organizationSubscription: "FREE" | "PRO" | "ENTERPRISE" | null;
     subscriptionExpiry?: string; // ISO date string
+    subscriptionStatus?: "ACTIVE" | "EXPIRED" | "CANCELLED" | null;
 }
 
 export function useAuth() {

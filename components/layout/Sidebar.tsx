@@ -104,7 +104,7 @@ export default function Sidebar() {
                   {user?.organizationName || "Organization"}
                 </p>
 
-                {user?.organizationSubscription === "PRO" && (
+                {user?.organizationSubscription === "PRO" && user?.subscriptionStatus === "ACTIVE" && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
                     PRO
                     <Verified size={12} className="text-white" />

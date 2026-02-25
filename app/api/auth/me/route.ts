@@ -25,7 +25,7 @@ export async function GET() {
     
     const subscription = await Subscription.findOne({
       organization: user.organizationId,
-    }).select("endDate").lean();
+    }).select("endDate status").lean();
 
     return NextResponse.json({
       success: true,
@@ -40,6 +40,7 @@ export async function GET() {
         organizationLogo: organization?.logo || "",
         organizationSubscription: organization?.plan,
         subscriptionExpiry: subscription?.endDate,
+        subscriptionStatus : subscription ? subscription.status : null,
       },
     });
   } catch (error: any) {
