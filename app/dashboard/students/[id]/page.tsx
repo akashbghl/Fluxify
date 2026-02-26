@@ -7,6 +7,7 @@ import StudentForm, {
   StudentFormData,
 } from "@/components/students/StudentForm";
 import Button from "@/components/ui/Button";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function EditStudentPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,11 +17,37 @@ export default function EditStudentPage() {
     useState<StudentFormData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { organization } = useAuth();
 
-  /* ============================
-      Fetch student
-  ============================ */
+    const shifts =
+    organization?.seatConfig?.shifts?.map((shift: any) => ({
+      shiftName: shift.shiftName,
+      totalSeats: shift.totalSeats,
+    })) || [];
 
+  // ✅ Seat Availability Checker
+  const checkSeatAvailability = async (
+    shiftName: string,
+    seatNumber: number
+  ) => {
+    try {
+      const res = await fetch("/api/students/check-seat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizationId: organization?._id,
+          shiftName,
+          seatNumber,
+        }),
+      });
+
+      const data = await res.json();
+      return data.available;
+    } catch {
+      return false;
+    }
+  };
+  /* ================= Fetch student ================= */
   useEffect(() => {
     const fetchStudent = async () => {
       try {
@@ -37,15 +64,17 @@ export default function EditStudentPage() {
             return;
           }
 
+          // Include shiftName and seatNumber
           setStudent({
             name: found.name,
             email: found.email,
             phone: found.phone,
             plan: found.plan,
-            startDate: found.startDate
-              .split("T")[0],
+            startDate: found.startDate.split("T")[0],
             feesPaid: found.feesPaid,
             pendingFees: found.pendingFees,
+            shiftName: found.shiftName || "",
+            seatNumber: found.seatNumber || null,
           });
         }
       } catch (error) {
@@ -58,13 +87,8 @@ export default function EditStudentPage() {
     fetchStudent();
   }, [id, router]);
 
-  /* ============================
-      Update
-  ============================ */
-
-  const handleUpdate = async (
-    formData: StudentFormData
-  ) => {
+  /* ================= Update student ================= */
+  const handleUpdate = async (formData: StudentFormData) => {
     setSaving(true);
 
     try {
@@ -76,7 +100,7 @@ export default function EditStudentPage() {
         },
         body: JSON.stringify({
           id,
-          ...formData,
+          ...formData, // now includes shiftName and seatNumber
         }),
       });
 
@@ -95,10 +119,7 @@ export default function EditStudentPage() {
     }
   };
 
-  /* ============================
-      UI
-  ============================ */
-
+  /* ================= UI ================= */
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -134,6 +155,8 @@ export default function EditStudentPage() {
             initialData={student}
             onSubmit={handleUpdate}
             loading={saving}
+            shifts={shifts}
+            checkSeatAvailability={checkSeatAvailability}
           />
         </div>
       </div>
