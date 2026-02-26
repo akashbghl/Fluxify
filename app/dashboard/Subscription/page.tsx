@@ -174,9 +174,9 @@ const page = () => {
                                     <h3 className="text-lg font-semibold text-white">Pro</h3>
                                     <p className="mt-4 text-4xl font-bold text-white">
                                         {billing === "monthly" ? (
-                                            <>₹999 <span className="text-base font-medium text-gray-500">/month</span></>
+                                            <>₹149 <span className="text-base font-medium text-gray-500">/month</span></>
                                         ) : (
-                                            <>₹9990 <span className="text-base font-medium text-gray-500">/year</span></>
+                                            <>₹1499 <span className="text-base font-medium text-gray-500">/year</span></>
                                         )}
                                     </p>
                                     <p className="mt-2 text-sm text-gray-500">

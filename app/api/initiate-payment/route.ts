@@ -12,8 +12,8 @@ export async function POST(req: NextRequest) {
         const { organizationId } = auth;
 
         if (
-            !process.env.RAZORPAY_TEST_KEY ||
-            !process.env.RAZORPAY_TEST_SECRET
+            !process.env.RAZORPAY_LIVE_KEY ||
+            !process.env.RAZORPAY_LIVE_SECRET
         ) {
             return NextResponse.json(
                 { success: false, message: "Razorpay keys missing" },
@@ -22,12 +22,12 @@ export async function POST(req: NextRequest) {
         }
 
         const razorpay = new Razorpay({
-            key_id: process.env.RAZORPAY_TEST_KEY,
-            key_secret: process.env.RAZORPAY_TEST_SECRET,
+            key_id: process.env.RAZORPAY_LIVE_KEY,
+            key_secret: process.env.RAZORPAY_LIVE_SECRET,
         });
 
         const plan = "PRO";
-        const monthlyPrice = 999;
+        const monthlyPrice = 1;
         const amountInPaise = monthlyPrice * 100;
 
         /* =========================

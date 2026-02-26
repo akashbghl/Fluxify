@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const secret = process.env.RAZORPAY_TEST_SECRET as string;
+    const secret = process.env.RAZORPAY_LIVE_SECRET as string;
 
     /* ==========================
        Signature Verification
