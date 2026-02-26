@@ -7,10 +7,41 @@ import StudentForm, {
   StudentFormData,
 } from "@/components/students/StudentForm";
 import Button from "@/components/ui/Button";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AddStudentPage() {
   const router = useRouter();
+  const { organization } = useAuth();
   const [saving, setSaving] = useState(false);
+
+  const shifts =
+    organization?.seatConfig?.shifts?.map((shift: any) => ({
+      shiftName: shift.shiftName,
+      totalSeats: shift.totalSeats,
+    })) || [];
+
+  // ✅ Seat Availability Checker
+  const checkSeatAvailability = async (
+    shiftName: string,
+    seatNumber: number
+  ) => {
+    try {
+      const res = await fetch("/api/students/check-seat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizationId: organization?._id,
+          shiftName,
+          seatNumber,
+        }),
+      });
+
+      const data = await res.json();
+      return data.available;
+    } catch {
+      return false;
+    }
+  };
 
   const handleCreateStudent = async (
     formData: StudentFormData
@@ -23,7 +54,10 @@ export default function AddStudentPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          organizationId: organization?._id,
+        }),
       });
 
       const data = await res.json();
@@ -43,6 +77,7 @@ export default function AddStudentPage() {
   return (
     <ProtectedRoute>
       <div className="max-w-xl space-y-4">
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">
@@ -64,6 +99,8 @@ export default function AddStudentPage() {
           <StudentForm
             onSubmit={handleCreateStudent}
             loading={saving}
+            shifts={shifts}
+            checkSeatAvailability={checkSeatAvailability}
           />
         </div>
       </div>

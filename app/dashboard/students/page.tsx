@@ -14,6 +14,9 @@ export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "EXPIRED"
+  >("ALL");
 
   /* ============================
       Fetch Students
@@ -39,109 +42,157 @@ export default function StudentsPage() {
     }
   };
 
-
   useEffect(() => {
     fetchStudents();
   }, []);
 
   /* ============================
-      Filter
+      Filter Logic
   ============================ */
 
   const filteredStudents = useMemo(() => {
-    return students.filter((s) =>
-      `${s.name} ${s.phone} ${s.email || ""}`
+    return students.filter((s) => {
+      const matchesSearch = `
+        ${s.name}
+        ${s.phone}
+        ${s.email || ""}
+        ${s.shiftName || ""}
+        ${s.seatNumber || ""}
+      `
         .toLowerCase()
-        .includes(search.toLowerCase())
-    );
-  }, [students, search]);
+        .includes(search.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "ALL"
+          ? true
+          : s.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [students, search, statusFilter]);
 
   /* ============================
-      Delete
+      Delete Student
   ============================ */
 
   const handleDelete = async (id: string) => {
-    const confirm = window.confirm(
+    const confirmDelete = window.confirm(
       "Are you sure you want to delete this student?"
     );
 
-    if (!confirm) return;
+    if (!confirmDelete) return;
 
     try {
-      await fetch(`/api/students?id=${id}`, {
+      const res = await fetch(`/api/students?id=${id}`, {
         method: "DELETE",
         credentials: "include",
       });
 
-    fetchStudents();
-  } catch (error) {
-    alert("Delete failed");
-  }
-};
+      const data = await res.json();
 
-/* ============================
-    UI
-============================ */
+      if (!data.success) {
+        throw new Error(data.message);
+      }
 
-if (loading) {
-  return (
-    <div className="flex h-full items-center justify-center">
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
-    </div>
-  );
-}
+      // Optimistic update (no refetch needed)
+      setStudents((prev) =>
+        prev.filter((s) => s._id !== id)
+      );
 
-return (
-  <ProtectedRoute>
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-lg font-semibold">
-          Students
-        </h1>
+    } catch (error) {
+      alert("Delete failed");
+    }
+  };
 
-        <div className="flex gap-2">
-          <input
-            placeholder="Search students..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-            className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black sm:w-64"
-          />
+  /* ============================
+      Loading State
+  ============================ */
 
-          <Button
-            onClick={() =>
-              router.push("/dashboard/students/add")
-            }
-          >
-            Add Student
-          </Button>
-        </div>
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
       </div>
+    );
+  }
 
-      {/* Students Grid */}
-      {filteredStudents.length === 0 ? (
-        <p className="text-sm text-gray-500">
-          No students found.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredStudents.map((student) => (
-            <StudentCard
-              key={student._id}
-              student={student}
-              onEdit={() =>
-                router.push(
-                  `/dashboard/students/${student._id}`
+  /* ============================
+      UI
+  ============================ */
+
+  return (
+    <ProtectedRoute>
+      <div className="space-y-5">
+
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-lg font-semibold">
+            Students
+          </h1>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+
+            {/* Search */}
+            <input
+              placeholder="Search name, phone, shift, seat..."
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+              className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black sm:w-64"
+            />
+
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(
+                  e.target.value as
+                    | "ALL"
+                    | "ACTIVE"
+                    | "EXPIRED"
                 )
               }
-              onDelete={handleDelete}
-            />
-          ))}
+              className="rounded-md border px-3 py-2 text-sm"
+            >
+              <option value="ALL">All</option>
+              <option value="ACTIVE">Active</option>
+              <option value="EXPIRED">Expired</option>
+            </select>
+
+            {/* Add Button */}
+            <Button
+              onClick={() =>
+                router.push("/dashboard/students/add")
+              }
+            >
+              Add Student
+            </Button>
+          </div>
         </div>
-      )}
-    </div>
-  </ProtectedRoute>
-);
+
+        {/* Grid */}
+        {filteredStudents.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            No students found.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredStudents.map((student) => (
+              <StudentCard
+                key={student._id}
+                student={student}
+                onEdit={() =>
+                  router.push(
+                    `/dashboard/students/${student._id}`
+                  )
+                }
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </ProtectedRoute>
+  );
 }

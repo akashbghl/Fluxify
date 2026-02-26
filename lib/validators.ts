@@ -26,6 +26,8 @@ export const studentCreateSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().min(10),
   plan: z.enum(["1_MONTH", "3_MONTH", "6_MONTH", "12_MONTH"]),
+  shiftName: z.string().min(1),
+  seatNumber: z.coerce.number().int().positive(),
   startDate: z.string(), // ISO date
   feesPaid: z.number().min(0),
   pendingFees: z.number().min(0).optional(),

@@ -2,15 +2,17 @@ import mongoose, { Schema, models, model } from "mongoose";
 
 export interface IStudent {
   name: string;
-  email: string;
+  email?: string;
   phone: string;
   plan: "1_MONTH" | "3_MONTH" | "6_MONTH" | "12_MONTH";
+  shiftName: string;      
+  seatNumber: number;               
   startDate: Date;
   expiryDate: Date;
   feesPaid: number;
   pendingFees: number;
   status: "ACTIVE" | "EXPIRED";
-  organizationId: mongoose.Types.ObjectId;   // ✅ Added
+  organizationId: mongoose.Types.ObjectId;
   createdAt: Date;
 }
 
@@ -38,6 +40,17 @@ const StudentSchema = new Schema<IStudent>(
       type: String,
       enum: ["1_MONTH", "3_MONTH", "6_MONTH", "12_MONTH"],
       required: true,
+    },
+    shiftName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    seatNumber: {
+      type: Number,
+      required: true,
+      min: 1,
     },
 
     startDate: {
@@ -69,9 +82,6 @@ const StudentSchema = new Schema<IStudent>(
       default: "ACTIVE",
     },
 
-    /* ===========================
-        Organization Reference
-    ============================ */
     organizationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organization",
@@ -79,9 +89,7 @@ const StudentSchema = new Schema<IStudent>(
       index: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 /**
@@ -98,13 +106,22 @@ StudentSchema.pre("save", function () {
   }
 });
 
-/* ===========================
-    Compound Index
-=========================== */
-StudentSchema.index({
-  organizationId: 1,
-  expiryDate: 1,
-});
+/* ======================================================
+   Prevent Duplicate Seat Booking
+   ====================================================== */
+
+StudentSchema.index(
+  {
+    organizationId: 1,
+    shiftName: 1,
+    seatNumber: 1,
+    status: 1,
+  },
+  {
+    unique: true,
+    partialFilterExpression: { status: "ACTIVE" },
+  }
+);
 
 const Student =
   models.Student || model<IStudent>("Student", StudentSchema);

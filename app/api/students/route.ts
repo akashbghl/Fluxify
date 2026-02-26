@@ -38,21 +38,25 @@ export async function GET() {
   }
 }
 
-/* ============================
-   POST → Create student (ORG SAFE)
-============================ */
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const auth = await requireAuth();   // ✅ Extract from cookie
+    const auth = await requireAuth();
     const organizationId = auth.organizationId;
 
     const body = await req.json();
     const data = validate(studentCreateSchema, body);
 
-    // 🧮 Calculate expiry date based on plan
-    const startDate = new Date(data.startDate);
-    const expiryDate = new Date(startDate);
+    if (!data.shiftName || !data.seatNumber) {
+      return NextResponse.json(
+        { success: false, message: "Shift and seat number required" },
+        { status: 400 }
+      );
+    }
+
+    /* ============================
+       Calculate Expiry
+    ============================ */
 
     const PLAN_MAP: Record<string, number> = {
       "1_MONTH": 1,
@@ -61,15 +65,25 @@ export async function POST(req: NextRequest) {
       "12_MONTH": 12,
     };
 
+    const startDate = new Date(data.startDate);
+    const expiryDate = new Date(startDate);
     expiryDate.setMonth(
       expiryDate.getMonth() + PLAN_MAP[data.plan]
     );
 
+    const today = new Date();
+    const status =
+      expiryDate < today ? "EXPIRED" : "ACTIVE";
+
+    console.log("Creating student with data:", {
+      ...data});
+      
     const student = await Student.create({
       ...data,
       startDate,
       expiryDate,
-      organizationId, // ✅ Inject org
+      status,
+      organizationId,
     });
 
     return NextResponse.json({
@@ -77,7 +91,20 @@ export async function POST(req: NextRequest) {
       message: "Student added successfully",
       student,
     });
+
   } catch (error: any) {
+
+    /* 🔥 HANDLE DUPLICATE SEAT ERROR */
+    if (error.code === 11000) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Seat already booked in this shift",
+        },
+        { status: 400 }
+      );
+    }
+
     console.error("Create Student Error:", error.message);
 
     return NextResponse.json(
@@ -86,14 +113,10 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-/* ============================
-   PUT → Update student (ORG SAFE)
-============================ */
+// update student
 export async function PUT(req: NextRequest) {
   try {
     await connectDB();
-
     const auth = await requireAuth();
     const organizationId = auth.organizationId;
 
@@ -120,16 +143,13 @@ export async function PUT(req: NextRequest) {
 
     if (!existingStudent) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Student not found or unauthorized",
-        },
+        { success: false, message: "Student not found" },
         { status: 404 }
       );
     }
 
     /* ============================
-       Recalculate expiryDate
+       Recalculate Expiry
     ============================ */
 
     const PLAN_MAP: Record<string, number> = {
@@ -150,10 +170,6 @@ export async function PUT(req: NextRequest) {
       expiryDate.getMonth() + PLAN_MAP[plan]
     );
 
-    /* ============================
-       Recalculate status
-    ============================ */
-
     const today = new Date();
     const status =
       expiryDate < today ? "EXPIRED" : "ACTIVE";
@@ -172,7 +188,7 @@ export async function PUT(req: NextRequest) {
     const updatedStudent = await Student.findOneAndUpdate(
       { _id: id, organizationId },
       updatePayload,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     return NextResponse.json({
@@ -180,7 +196,19 @@ export async function PUT(req: NextRequest) {
       message: "Student updated successfully",
       student: updatedStudent,
     });
+
   } catch (error: any) {
+
+    if (error.code === 11000) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Seat already booked in this shift",
+        },
+        { status: 400 }
+      );
+    }
+
     console.error("Update Student Error:", error.message);
 
     return NextResponse.json(

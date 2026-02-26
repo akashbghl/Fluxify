@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Phone, Mail, Pencil, Trash } from "lucide-react";
+import { Calendar, Phone, Mail, Pencil, Trash, Clock, Armchair } from "lucide-react";
 import Button from "@/components/ui/Button";
 import clsx from "clsx";
 
@@ -10,6 +10,8 @@ export interface Student {
   email?: string;
   phone: string;
   plan: string;
+  shiftName: string;
+  seatNumber: number;
   expiryDate: string;
   status: "ACTIVE" | "EXPIRED";
 }
@@ -25,18 +27,21 @@ export default function StudentCard({
   onEdit,
   onDelete,
 }: StudentCardProps) {
+
   const expiry = new Date(student.expiryDate);
 
   const daysLeft = Math.ceil(
     (expiry.getTime() - Date.now()) /
       (1000 * 60 * 60 * 24)
   );
-  if(daysLeft < 0 && student.status !== "EXPIRED") {
-    student.status = "EXPIRED";
-  }
+
+  // ✅ derive status safely (do NOT mutate props)
+  const computedStatus =
+    daysLeft < 0 ? "EXPIRED" : student.status;
 
   return (
     <div className="rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md">
+
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold">
@@ -46,17 +51,18 @@ export default function StudentCard({
         <span
           className={clsx(
             "rounded-full px-2 py-0.5 text-xs font-medium",
-            student.status === "ACTIVE"
+            computedStatus === "ACTIVE"
               ? "bg-green-100 text-green-700"
               : "bg-red-100 text-red-700"
           )}
         >
-          {student.status}
+          {computedStatus}
         </span>
       </div>
 
       {/* Info */}
       <div className="space-y-2 text-xs text-gray-600">
+
         {student.email && (
           <div className="flex items-center gap-2">
             <Mail size={14} />
@@ -69,6 +75,19 @@ export default function StudentCard({
           <span>{student.phone}</span>
         </div>
 
+        {/* Shift */}
+        <div className="flex items-center gap-2">
+          <Clock size={14} />
+          <span>Shift: {student.shiftName}</span>
+        </div>
+
+        {/* Seat */}
+        <div className="flex items-center gap-2">
+          <Armchair size={14} />
+          <span>Seat: {student.seatNumber}</span>
+        </div>
+
+        {/* Expiry */}
         <div className="flex items-center gap-2">
           <Calendar size={14} />
           <span>
