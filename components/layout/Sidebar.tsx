@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
+  SofaIcon,
   CreditCard,
   CalendarCheck,
   Settings,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
+import { s } from "framer-motion/client";
 
 /* ======================================================
    NAV CONFIG
@@ -46,7 +48,7 @@ const navItems = [
   {
     label: "Seat Chart",
     href: "/dashboard/seatchart",
-    icon: CalendarCheck,
+    icon: SofaIcon,
   },
   {
     label: "Settings",
