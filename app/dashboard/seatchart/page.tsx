@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth"
 import OrganizationSetupModal from "@/components/OrganizationSetupModal"
 import { StatCard } from "@/components/ReusableComponentsFunctions"
 import { Users, UserX, UserCheck, Edit } from "lucide-react"
+import Loader from "@/components/ui/Loader"
 
 type SeatStatus = "available" | "booked" | "selected"
 
@@ -117,9 +118,7 @@ export default function LibrarySeatPage() {
   /* ================= Loading ================= */
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading...</p>
-      </div>
+      <Loader/>
     )
   }
 

@@ -27,17 +27,16 @@ const page = () => {
                 toast.error("Please login to upgrade your plan");
                 return;
             }
-            const scriptLoaded = await loadRazorpayScript();
 
+            const scriptLoaded = await loadRazorpayScript();
             if (!scriptLoaded) {
-                alert("Razorpay SDK failed to load.");
+                toast.error("Payment gateway failed to load.");
                 return;
             }
 
             const response = await fetch("/api/initiate-payment", {
                 method: "POST",
             });
-            console.log(response);
 
             if (!response.ok) {
                 throw new Error("Failed to initiate payment");
@@ -53,23 +52,18 @@ const page = () => {
                 description: "Pro Subscription",
                 order_id: order.id,
 
-                handler: async function (res: any) {
-                    const verifyRes = await fetch("/api/verify-payment", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(res),
-                    });
+                handler: function () {
+                    router.push("/payment-success");
+                },
 
-                    const result = await verifyRes.json();
+                prefill: {
+                    email: user.email,
+                },
 
-                    if (result.success) {
-                        toast.success("Payment successful! 🎉 Your subscription has been upgraded.");
-                        await refreshUser(); // Refresh user data to get updated subscription
-                        window.location.reload();
-
-                    } else {
-                        alert("Payment verification failed ❌");
-                    }
+                modal: {
+                    ondismiss: function () {
+                        toast.info("Payment cancelled");
+                    },
                 },
 
                 theme: {
@@ -82,7 +76,7 @@ const page = () => {
 
         } catch (error) {
             console.error(error);
-            alert("Something went wrong");
+            toast.error("Something went wrong");
         }
     };
 
