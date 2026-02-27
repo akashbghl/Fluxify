@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         });
 
         const plan = "PRO";
-        const monthlyPrice = 1;
+        const monthlyPrice = 0.1;
         const amountInPaise = monthlyPrice * 100;
 
         /* =========================

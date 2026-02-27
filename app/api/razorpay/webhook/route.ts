@@ -6,6 +6,11 @@ import Organization from "@/models/Organization";
 
 export const runtime = "nodejs"; // Important for server-side API
 
+export async function GET(req: NextRequest) {
+  console.log("GET webhook hit");
+  return new Response("ok");
+}
+
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
