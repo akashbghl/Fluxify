@@ -7,6 +7,7 @@ export function middleware(req: NextRequest) {
   const isPublicApi = pathname.startsWith("/api/auth");
   const isDashboard = pathname.startsWith("/dashboard");
   const isApiRoute = pathname.startsWith("/api");
+  const isWebhookRoute = pathname === "/api/razorpay/webhook";
 
   const isCronRoute =
     pathname.startsWith("/api/cron");
@@ -15,6 +16,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();   // allow without auth
   }
 
+  if (isWebhookRoute) {
+    return NextResponse.next();   // allow without auth
+  }
   const isReminderRoute =
     pathname.startsWith("/api/reminders");
   if (isReminderRoute) {
