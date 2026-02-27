@@ -34,7 +34,7 @@ const page = () => {
                 return;
             }
 
-            const response = await fetch("/api/initiate-payment", {
+            const response = await fetch("/api/razorpay/initiate-payment", {
                 method: "POST",
             });
 
