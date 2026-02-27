@@ -4,46 +4,41 @@ import { connectDB } from "@/lib/db";
 import Subscription from "@/models/Subscription";
 import Organization from "@/models/Organization";
 
+export const runtime = "nodejs"; // Important for server-side API
+
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET as string;
 
-    const rawBody = await req.text(); // IMPORTANT: raw body
+    // Razorpay sends raw JSON string
+    const rawBody = await req.text();
     const signature = req.headers.get("x-razorpay-signature") as string;
 
+    // Signature verification
     const expectedSignature = crypto
       .createHmac("sha256", webhookSecret)
       .update(rawBody)
       .digest("hex");
 
     if (expectedSignature !== signature) {
+      console.log("Invalid signature!");
       return NextResponse.json({ status: "Invalid signature" }, { status: 400 });
     }
 
     const event = JSON.parse(rawBody);
 
-    /* ==============================
-       Handle Payment Captured
-    ===============================*/
     if (event.event === "payment.captured") {
       const payment = event.payload.payment.entity;
       const orderId = payment.order_id;
       const paymentId = payment.id;
 
-      const subscription = await Subscription.findOne({
-        razorpayOrderId: orderId,
-      });
+      const subscription = await Subscription.findOne({ razorpayOrderId: orderId });
+      if (!subscription) return NextResponse.json({ status: "Subscription not found" });
 
-      if (!subscription) {
-        return NextResponse.json({ status: "Subscription not found" });
-      }
-
-      // Prevent duplicate activation
-      if (subscription.status === "ACTIVE") {
+      if (subscription.status === "ACTIVE")
         return NextResponse.json({ status: "Already active" });
-      }
 
       const startDate = new Date();
       const endDate = new Date();
@@ -64,21 +59,14 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    /* ==============================
-       Handle Payment Failed
-    ===============================*/
     if (event.event === "payment.failed") {
       const payment = event.payload.payment.entity;
       const orderId = payment.order_id;
 
-      await Subscription.findOneAndUpdate(
-        { razorpayOrderId: orderId },
-        { status: "FAILED" }
-      );
+      await Subscription.findOneAndUpdate({ razorpayOrderId: orderId }, { status: "FAILED" });
     }
 
     return NextResponse.json({ status: "ok" });
-
   } catch (error) {
     console.error("Webhook Error:", error);
     return NextResponse.json({ status: "Server error" }, { status: 500 });
