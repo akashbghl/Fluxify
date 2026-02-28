@@ -135,7 +135,7 @@ const page = () => {
                             </div>
 
                             {/* Pricing Grid */}
-                            <div className="mt-10 grid grid-cols-1 gap-2 md:grid-cols-3">
+                            <div className="mt-10 grid grid-cols-1 max-md:gap-8 gap-2 md:grid-cols-3">
 
                                 {/* Starter Plan */}
                                 <div className="flex flex-col border border-gray-700/80 p-8 shadow-sm transition hover:shadow-md">

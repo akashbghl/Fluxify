@@ -97,7 +97,7 @@ export default function PaymentSuccess() {
         {/* Support / CTA */}
         <div className="mt-4">
           <p className="text-sm text-gray-400">
-            Need help? Contact <a href="mailto:support@yourapp.com" className="underline">support</a>.
+            Need help? Contact <a href="mailto:akash27aug.2002@gmail.com" className="underline">support</a>.
           </p>
         </div>
       </motion.div>

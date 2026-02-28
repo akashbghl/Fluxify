@@ -7,6 +7,7 @@ import {
   studentCreateSchema,
   studentUpdateSchema,
 } from "@/lib/validators";
+import Organization from "@/models/Organization";
 
 
 /* ============================
@@ -75,9 +76,14 @@ export async function POST(req: NextRequest) {
     const status =
       expiryDate < today ? "EXPIRED" : "ACTIVE";
 
-    console.log("Creating student with data:", {
-      ...data});
-      
+    const organization = await Organization.findById(organizationId);
+    if(organization?.plan === "FREE" && organization.seatConfig?.totalSeats>=50) {
+      return NextResponse.json(
+        { success: false, message: "Free plan allows max 50 students. Please upgrade your plan." },
+        { status: 400 }
+      );    
+    }
+         
     const student = await Student.create({
       ...data,
       startDate,
@@ -94,7 +100,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
 
-    /* 🔥 HANDLE DUPLICATE SEAT ERROR */
+    /* HANDLE DUPLICATE SEAT ERROR */
     if (error.code === 11000) {
       return NextResponse.json(
         {
