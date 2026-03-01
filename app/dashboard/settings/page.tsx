@@ -1,12 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
-import { Verified } from "lucide-react";
-import { button, div, span } from "framer-motion/client";
+import {
+  Verified,
+  Building2,
+  UserRound,
+  Lock,
+  ShieldAlert,
+  Sparkles,
+} from "lucide-react";
+
+type MessageTone = "success" | "error";
+
+interface UiMessage {
+  tone: MessageTone;
+  text: string;
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
 
 export default function SettingsPage() {
   const { user, logout, refreshUser } = useAuth();
@@ -15,7 +33,6 @@ export default function SettingsPage() {
   const [organizationName, setOrganizationName] = useState("");
   const [organizationLogo, setOrganizationLogo] = useState("");
   const [logoPreview, setLogoPreview] = useState("");
-
   const [email, setEmail] = useState("");
 
   const [oldPassword, setOldPassword] = useState("");
@@ -23,15 +40,10 @@ export default function SettingsPage() {
 
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [message, setMessage] = useState("");
-
-  /* ============================
-      Load Current Settings
-  ============================ */
+  const [message, setMessage] = useState<UiMessage | null>(null);
 
   useEffect(() => {
     if (!user) return;
-
     setName(user.name || "");
     setEmail(user.email || "");
     setOrganizationName(user.organizationName || "");
@@ -39,13 +51,17 @@ export default function SettingsPage() {
     setLogoPreview(user.organizationLogo || "");
   }, [user]);
 
-  /* ============================
-      Update Profile + Branding
-  ============================ */
+  const isProActive =
+    user?.organizationSubscription === "PRO" && user.subscriptionStatus === "ACTIVE";
+
+  const subscriptionExpiryText = useMemo(() => {
+    if (!user?.subscriptionExpiry) return "N/A";
+    return new Date(user.subscriptionExpiry).toLocaleDateString();
+  }, [user?.subscriptionExpiry]);
 
   const handleProfileSave = async () => {
     setSavingProfile(true);
-    setMessage("");
+    setMessage(null);
 
     try {
       const res = await fetch("/api/settings", {
@@ -59,30 +75,35 @@ export default function SettingsPage() {
         }),
       });
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message);
+      const data = (await res.json()) as { success?: boolean; message?: string };
+      if (!data.success) throw new Error(data.message || "Failed to update settings");
 
-      setMessage("✅ Profile updated successfully");
-      await refreshUser(); // 🔄 Update sidebar/navbar branding
-    } catch (err: any) {
-      setMessage("❌ Failed to update profile");
-      console.log("Error Message: ", err);
+      setMessage({
+        tone: "success",
+        text: "Profile and organization details updated successfully.",
+      });
+      await refreshUser();
+    } catch (error: unknown) {
+      setMessage({
+        tone: "error",
+        text: getErrorMessage(error, "Failed to update profile."),
+      });
     } finally {
       setSavingProfile(false);
     }
   };
 
-  /* ============================
-      Change Password
-  ============================ */
-
   const handlePasswordChange = async () => {
     if (!oldPassword || !newPassword) {
-      return alert("Fill both password fields");
+      setMessage({
+        tone: "error",
+        text: "Please fill both password fields.",
+      });
+      return;
     }
 
     setSavingPassword(true);
-    setMessage("");
+    setMessage(null);
 
     try {
       const res = await fetch("/api/settings", {
@@ -95,198 +116,222 @@ export default function SettingsPage() {
         }),
       });
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message);
+      const data = (await res.json()) as { success?: boolean; message?: string };
+      if (!data.success) throw new Error(data.message || "Password update failed");
 
-      setMessage("🔐 Password updated successfully");
+      setMessage({
+        tone: "success",
+        text: "Password updated successfully.",
+      });
       setOldPassword("");
       setNewPassword("");
-    } catch (err: any) {
-      setMessage(err.message || "❌ Password update failed");
+    } catch (error: unknown) {
+      setMessage({
+        tone: "error",
+        text: getErrorMessage(error, "Password update failed."),
+      });
     } finally {
       setSavingPassword(false);
     }
   };
-
-  /* ============================
-      Logo Preview
-  ============================ */
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setOrganizationLogo(value);
     setLogoPreview(value);
   };
-  const isProActive = user?.organizationSubscription === "PRO" && user.subscriptionStatus === "ACTIVE";
 
   return (
     <ProtectedRoute>
-      <div className="max-w-3xl space-y-6">
-        <h1 className="text-xl font-semibold">Settings</h1>
+      <div className="mx-auto max-w-5xl space-y-6">
+        <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-white via-slate-50 to-white p-5 shadow-sm sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Settings</h1>
+              <p className="mt-1 text-sm text-slate-600">
+                Manage your account, organization branding, and security in one place.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+              <Sparkles size={13} className="text-amber-500" />
+              Workspace Preferences
+            </span>
+          </div>
+        </div>
 
-        {/* Status Message */}
         {message && (
-          <div className="rounded-md border bg-gray-50 px-4 py-2 text-sm">
-            {message}
+          <div
+            className={`rounded-xl border px-4 py-3 text-sm ${
+              message.tone === "success"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                : "border-rose-200 bg-rose-50 text-rose-700"
+            }`}
+          >
+            {message.text}
           </div>
         )}
 
-        {/* ================= PROFILE ================= */}
-        <div className="rounded-xl border bg-white p-6 shadow-sm space-y-4">
-          <h2 className="text-sm font-semibold">
-            Profile & Organization
-          </h2>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <div className="space-y-6 xl:col-span-2">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-5 flex items-center gap-2">
+                <UserRound size={18} className="text-slate-700" />
+                <h2 className="text-base font-semibold text-slate-900">Profile & Organization</h2>
+              </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Input
+                  label="Full Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="border-slate-300 focus:ring-slate-900"
+                />
+                <Input label="Email" value={email} disabled className="bg-slate-50 text-slate-500" />
+                <Input
+                  label="Organization Name"
+                  value={organizationName}
+                  onChange={(e) => setOrganizationName(e.target.value)}
+                  className="border-slate-300 focus:ring-slate-900"
+                />
+                <Input
+                  label="Organization Logo URL"
+                  value={organizationLogo}
+                  onChange={handleLogoChange}
+                  className="border-slate-300 focus:ring-slate-900"
+                />
+              </div>
 
-            <Input
-              label="Email"
-              value={email}
-              disabled
-            />
-
-            <Input
-              label="Organization Name"
-              value={organizationName}
-              onChange={(e) =>
-                setOrganizationName(e.target.value)
-              }
-            />
-
-            <Input
-              label="Organization Logo URL"
-              value={organizationLogo}
-              onChange={handleLogoChange}
-            />
-          </div>
-
-          {/* SUBSRIPTION PLAN  */}
-          <div>
-            <p className="text-sm font-semibold text-gray-800">
-              Subscription Plan:{" "}
-              <span>
-                {user?.organizationSubscription === "PRO" ? (
-                  <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                    PRO
-                    <Verified size={12} className="ml-1 text-green-800" />
-                  </span>
-                ) :
-                  <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
-                    FREE
-                  </span>
-                }
-              </span>
-              {user?.organizationSubscription === "FREE" && (
-                <button className="ml-4 rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
-                  onClick={() => window.location.href = "/dashboard/Subscription"}
-                >Upgrade</button>
-              )}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-800 font-semibold flex items-center gap-1">
-              Subscription Status:{" "}
-              <span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${user?.subscriptionStatus === "ACTIVE"
-                ? "bg-green-100 text-green-800"
-                : user?.subscriptionStatus === "EXPIRED"
-                  ? "bg-red-100 text-red-800"
-                  : "bg-gray-100 text-gray-800"
-                }`}>
-                {user?.subscriptionStatus}
-              </span>
-              {isProActive && user?.subscriptionExpiry && (
-                <span className="ml-1 text-xs text-gray-500">
-                  (Expires on {new Date(user.subscriptionExpiry).toLocaleDateString()})
-                </span>
-              )}
-              {(user?.subscriptionStatus === "EXPIRED") && (
-                <div>
-                  <span>
-                    ({user.subscriptionExpiry ? new Date(user.subscriptionExpiry).toLocaleDateString() : "N/A"})
-                  </span>
-                  <button className="ml-2 px-2 py-1 cursor-pointer rounded-lg bg-gradient-to-r from-blue-500 to-blue-500 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2"
-                    onClick={() => window.location.href = "/dashboard/Subscription"}
-                  >Renew</button>
+              {logoPreview && (
+                <div className="mt-5 flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <img
+                    src={logoPreview}
+                    alt="Organization Logo Preview"
+                    className="h-14 w-14 rounded-xl border border-slate-200 bg-white object-cover"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">Logo Preview</p>
+                    <p className="text-xs text-slate-500">Shown in sidebar and other workspace areas.</p>
+                  </div>
                 </div>
               )}
-            </p>
-          </div>
-          {/* Logo Preview */}
-          {logoPreview && (
-            <div className="flex items-center gap-4 pt-2">
-              <img
-                src={logoPreview}
-                alt="Logo Preview"
-                className="h-14 w-14 rounded-md border object-cover"
-              />
-              <p className="text-xs text-gray-500">
-                Logo Preview
+
+              <div className="mt-5">
+                <Button onClick={handleProfileSave} loading={savingProfile}>
+                  Save Profile Changes
+                </Button>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-5 flex items-center gap-2">
+                <Lock size={18} className="text-slate-700" />
+                <h2 className="text-base font-semibold text-slate-900">Change Password</h2>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Input
+                  label="Current Password"
+                  type="password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  className="border-slate-300 focus:ring-slate-900"
+                />
+                <Input
+                  label="New Password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="border-slate-300 focus:ring-slate-900"
+                />
+              </div>
+
+              <p className="mt-3 text-xs text-slate-500">
+                Use a strong password with at least 8 characters and a mix of letters, numbers,
+                and symbols.
               </p>
-            </div>
-          )}
 
-          <Button
-            onClick={handleProfileSave}
-            loading={savingProfile}
-          >
-            Save Changes
-          </Button>
-        </div>
-
-        {/* ================= PASSWORD ================= */}
-        <div className="rounded-xl border bg-white p-6 shadow-sm space-y-4">
-          <h2 className="text-sm font-semibold">
-            Change Password
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label="Current Password"
-              type="password"
-              value={oldPassword}
-              onChange={(e) =>
-                setOldPassword(e.target.value)
-              }
-            />
-
-            <Input
-              label="New Password"
-              type="password"
-              value={newPassword}
-              onChange={(e) =>
-                setNewPassword(e.target.value)
-              }
-            />
+              <div className="mt-5">
+                <Button onClick={handlePasswordChange} loading={savingPassword} variant="outline">
+                  Update Password
+                </Button>
+              </div>
+            </section>
           </div>
 
-          <Button
-            onClick={handlePasswordChange}
-            loading={savingPassword}
-            variant="outline"
-          >
-            Update Password
-          </Button>
-        </div>
+          <div className="space-y-6">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="mb-4 flex items-center gap-2">
+                <Building2 size={18} className="text-slate-700" />
+                <h3 className="text-sm font-semibold text-slate-900">Subscription</h3>
+              </div>
 
-        {/* ================= DANGER ZONE ================= */}
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 space-y-3">
-          <h2 className="text-sm font-semibold text-red-700">
-            Danger Zone
-          </h2>
+              <div className="space-y-3">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500">Plan</p>
+                  <div className="mt-1">
+                    {user?.organizationSubscription === "PRO" ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                        PRO
+                        <Verified size={12} />
+                      </span>
+                    ) : (
+                      <span className="inline-flex rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                        FREE
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-          <p className="text-xs text-red-600">
-            Logging out will remove your session from
-            this device.
-          </p>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500">Status</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        user?.subscriptionStatus === "ACTIVE"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : user?.subscriptionStatus === "EXPIRED"
+                            ? "bg-rose-100 text-rose-700"
+                            : "bg-slate-200 text-slate-700"
+                      }`}
+                    >
+                      {user?.subscriptionStatus || "N/A"}
+                    </span>
+                    <span className="text-xs text-slate-500">Expiry: {subscriptionExpiryText}</span>
+                  </div>
+                </div>
 
-          <Button variant="danger" onClick={logout}>
-            Logout
-          </Button>
+                {(user?.organizationSubscription === "FREE" || user?.subscriptionStatus === "EXPIRED") && (
+                  <Button
+                    onClick={() => {
+                      window.location.href = "/dashboard/Subscription";
+                    }}
+                    className="w-full"
+                  >
+                    {user?.subscriptionStatus === "EXPIRED" ? "Renew Subscription" : "Upgrade to Pro"}
+                  </Button>
+                )}
+
+                {isProActive && (
+                  <p className="text-xs text-emerald-700">
+                    Your PRO subscription is active and all premium features are enabled.
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-rose-200 bg-rose-50 p-5 shadow-sm">
+              <div className="mb-2 flex items-center gap-2">
+                <ShieldAlert size={18} className="text-rose-700" />
+                <h3 className="text-sm font-semibold text-rose-700">Danger Zone</h3>
+              </div>
+              <p className="mb-4 text-xs text-rose-600">
+                Logging out will remove your active session from this device.
+              </p>
+              <Button variant="danger" onClick={logout} className="w-full">
+                Logout
+              </Button>
+            </section>
+          </div>
         </div>
       </div>
     </ProtectedRoute>
