@@ -5,7 +5,6 @@ import { Plus, Trash2 } from "lucide-react"
 
 interface ShiftInput {
   shiftName: string
-  totalSeats: number
   startTime?: string
   endTime?: string
 }
@@ -25,13 +24,10 @@ export default function OrganizationSetupModal({
   const [shifts, setShifts] = useState<ShiftInput[]>([
     {
       shiftName: "Shift 1",
-      totalSeats: 50,
       startTime: "",
       endTime: "",
     },
   ])
-  console.log("Organization ID in Modal:", organizationId)
-
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -44,7 +40,6 @@ export default function OrganizationSetupModal({
       ...prev,
       {
         shiftName: `Shift ${prev.length + 1}`,
-        totalSeats: 0,
         startTime: "",
         endTime: "",
       },
@@ -62,7 +57,7 @@ export default function OrganizationSetupModal({
   const updateShift = (
     index: number,
     field: keyof ShiftInput,
-    value: string | number
+    value: string
   ) => {
     const updated = [...shifts]
     updated[index] = { ...updated[index], [field]: value }
@@ -73,16 +68,6 @@ export default function OrganizationSetupModal({
 
   const handleSubmit = async () => {
     setError("")
-
-    const totalShiftSeats = shifts.reduce(
-      (sum, shift) => sum + Number(shift.totalSeats),
-      0
-    )
-
-    if (totalShiftSeats > totalSeats) {
-      setError("Shift seats cannot exceed total seats")
-      return
-    }
 
     try {
       setLoading(true)
@@ -96,8 +81,6 @@ export default function OrganizationSetupModal({
           shifts,
         }),
       })
-      console.log("Setup Response:", res)
-
       const data = await res.json()
 
       if (!res.ok) {
@@ -105,8 +88,8 @@ export default function OrganizationSetupModal({
     }
     
     onSuccess()
-} catch (err: any) {
-    setError(err.message)
+} catch (err: unknown) {
+    setError(err instanceof Error ? err.message : "Setup failed")
     } finally {
       setLoading(false)
     }
@@ -173,19 +156,6 @@ export default function OrganizationSetupModal({
                     value={shift.shiftName}
                     onChange={e =>
                       updateShift(index, "shiftName", e.target.value)
-                    }
-                    className="w-full mt-1 border rounded-lg px-3 py-2"
-                  />
-                </div>
-
-                {/* SHIFT SEATS */}
-                <div>
-                  <label className="text-sm font-medium">Shift Seats</label>
-                  <input
-                    type="number"
-                    value={shift.totalSeats}
-                    onChange={e =>
-                      updateShift(index, "totalSeats", Number(e.target.value))
                     }
                     className="w-full mt-1 border rounded-lg px-3 py-2"
                   />

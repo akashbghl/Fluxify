@@ -15,6 +15,8 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import Loader from "@/components/ui/Loader";
+import { getOverlappingShiftNames } from "@/lib/shiftOverlap";
+import { normalizeStudentShiftNames } from "@/lib/studentShift";
 
 type SeatStatus = "available" | "booked" | "selected";
 
@@ -36,6 +38,7 @@ interface StudentApiItem {
   name?: string;
   status?: string;
   shiftName?: string;
+  shiftNames?: string[];
   seatNumber?: number;
 }
 
@@ -78,13 +81,23 @@ export default function LibrarySeatPage() {
 
         const bookedStudents = data.students;
 
-        const dynamicShifts: ShiftData[] = organization?.seatConfig?.shifts.map((shift) => {
-          const seats = generateSeats(shift.totalSeats);
+        const totalSeats = organization.seatConfig.totalSeats;
+        const allShifts = organization.seatConfig.shifts;
+
+        const dynamicShifts: ShiftData[] = allShifts.map((shift) => {
+          const seats = generateSeats(totalSeats);
+          const overlappingShiftNames = getOverlappingShiftNames(
+            shift.shiftName,
+            allShifts
+          );
 
           bookedStudents.forEach((student) => {
             const seatNumber = student.seatNumber;
             if (
-              student.shiftName === shift.shiftName &&
+              normalizeStudentShiftNames({
+                shiftName: student.shiftName,
+                shiftNames: student.shiftNames,
+              }).some((name) => overlappingShiftNames.includes(name)) &&
               student.status === "ACTIVE" &&
               typeof seatNumber === "number" &&
               seatNumber > 0
@@ -99,12 +112,12 @@ export default function LibrarySeatPage() {
 
           return {
             shiftName: shift.shiftName,
-            totalSeats: shift.totalSeats,
+            totalSeats,
             startTime: shift.startTime,
             endTime: shift.endTime,
             seats,
           };
-        }) ?? [];
+        });
 
         setShifts(dynamicShifts);
         setActiveShiftIndex(0);

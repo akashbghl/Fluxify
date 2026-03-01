@@ -3,6 +3,15 @@ import { connectDB } from "@/lib/db";
 import Student from "@/models/Student";
 import { requireAuth } from "@/lib/requireAuth";
 import mongoose from "mongoose";
+import { normalizeStudentShiftNames } from "@/lib/studentShift";
+
+interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  type: "warning" | "info" | "success";
+  date: Date;
+}
 
 export async function GET() {
   try {
@@ -25,7 +34,7 @@ export async function GET() {
       organizationId: orgObjectId,
       expiryDate: { $gte: today, $lte: next3Days },
     })
-      .select("name expiryDate shiftName seatNumber")
+      .select("name expiryDate shiftName shiftNames seatNumber")
       .sort({ expiryDate: 1 })
       .limit(20);
 
@@ -38,9 +47,9 @@ export async function GET() {
       startDate: { $gte: today },
       status: "ACTIVE",
       seatNumber: { $exists: true },
-      shiftName: { $exists: true },
+      $or: [{ shiftName: { $exists: true } }, { shiftNames: { $exists: true } }],
     })
-      .select("name startDate shiftName seatNumber")
+      .select("name startDate shiftName shiftNames seatNumber")
       .sort({ startDate: 1 })
       .limit(20);
 
@@ -59,10 +68,14 @@ export async function GET() {
     /* ==========================
        Map Notifications
     ========================== */
-    const notifications: any[] = [];
+    const notifications: NotificationItem[] = [];
 
     // Student Expiry Notifications
     expiringStudents.forEach((s) => {
+      const shifts = normalizeStudentShiftNames({
+        shiftName: s.shiftName,
+        shiftNames: s.shiftNames,
+      }).join(", ");
       const daysLeft = Math.ceil(
         (new Date(s.expiryDate).getTime() - today.getTime()) /
           (1000 * 60 * 60 * 24)
@@ -71,7 +84,7 @@ export async function GET() {
       notifications.push({
         id: s._id.toString(),
         title: "Subscription Expiry",
-        message: `Seat ${s.seatNumber} (Shift: ${s.shiftName}) for ${s.name} expires in ${daysLeft} day${daysLeft > 1 ? "s" : ""} (${s.expiryDate.toLocaleDateString()})`,
+        message: `Seat ${s.seatNumber} (Shift: ${shifts || "N/A"}) for ${s.name} expires in ${daysLeft} day${daysLeft > 1 ? "s" : ""} (${s.expiryDate.toLocaleDateString()})`,
         type: "warning",
         date: s.expiryDate,
       });
@@ -79,10 +92,14 @@ export async function GET() {
 
     // Seat Booking Notifications
     bookedSeats.forEach((s) => {
+      const shifts = normalizeStudentShiftNames({
+        shiftName: s.shiftName,
+        shiftNames: s.shiftNames,
+      }).join(", ");
       notifications.push({
         id: s._id.toString(),
         title: "Seat Booked",
-        message: `Seat ${s.seatNumber} (${s.shiftName}) is booked for ${s.name} on ${new Date(
+        message: `Seat ${s.seatNumber} (${shifts || "N/A"}) is booked for ${s.name} on ${new Date(
           s.startDate
         ).toLocaleDateString()}`,
         type: "info",
@@ -111,11 +128,12 @@ export async function GET() {
       count: notifications.length,
       notifications,
     });
-  } catch (error: any) {
-    console.error("Notifications API Error:", error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to load notifications";
+    console.error("Notifications API Error:", message);
 
     return NextResponse.json(
-      { success: false, message: error.message || "Failed to load notifications" },
+      { success: false, message },
       { status: 500 }
     );
   }

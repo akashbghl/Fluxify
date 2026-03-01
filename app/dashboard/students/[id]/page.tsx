@@ -8,6 +8,7 @@ import StudentForm, {
 } from "@/components/students/StudentForm";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
+import { normalizeStudentShiftNames } from "@/lib/studentShift";
 
 export default function EditStudentPage() {
   const { id } = useParams<{ id: string }>();
@@ -19,15 +20,29 @@ export default function EditStudentPage() {
   const [saving, setSaving] = useState(false);
   const { organization } = useAuth();
 
+  interface StudentResponseItem {
+    _id: string;
+    name: string;
+    email?: string;
+    phone: string;
+    plan: "1_MONTH" | "3_MONTH" | "6_MONTH" | "12_MONTH";
+    startDate: string;
+    feesPaid: number;
+    pendingFees?: number;
+    seatNumber?: number;
+    shiftName?: string;
+    shiftNames?: string[];
+  }
+
     const shifts =
-    organization?.seatConfig?.shifts?.map((shift: any) => ({
+    organization?.seatConfig?.shifts?.map((shift) => ({
       shiftName: shift.shiftName,
       totalSeats: shift.totalSeats,
     })) || [];
 
   // ✅ Seat Availability Checker
   const checkSeatAvailability = async (
-    shiftName: string,
+    shiftNames: string[],
     seatNumber: number
   ) => {
     try {
@@ -35,9 +50,9 @@ export default function EditStudentPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          organizationId: organization?._id,
-          shiftName,
+          shiftNames,
           seatNumber,
+          excludeStudentId: id,
         }),
       });
 
@@ -56,7 +71,7 @@ export default function EditStudentPage() {
 
         if (data.success) {
           const found = data.students.find(
-            (s: any) => s._id === id
+            (s: StudentResponseItem) => s._id === id
           );
 
           if (!found) {
@@ -64,7 +79,6 @@ export default function EditStudentPage() {
             return;
           }
 
-          // Include shiftName and seatNumber
           setStudent({
             name: found.name,
             email: found.email,
@@ -73,8 +87,11 @@ export default function EditStudentPage() {
             startDate: found.startDate.split("T")[0],
             feesPaid: found.feesPaid,
             pendingFees: found.pendingFees,
-            shiftName: found.shiftName || "",
-            seatNumber: found.seatNumber || null,
+            shiftNames: normalizeStudentShiftNames({
+              shiftName: found.shiftName,
+              shiftNames: found.shiftNames,
+            }),
+            seatNumber: found.seatNumber || undefined,
           });
         }
       } catch (error) {
@@ -112,7 +129,7 @@ export default function EditStudentPage() {
 
       router.push("/dashboard/students");
       router.refresh();
-    } catch (error) {
+    } catch {
       alert("Update failed");
     } finally {
       setSaving(false);
@@ -157,6 +174,7 @@ export default function EditStudentPage() {
             loading={saving}
             shifts={shifts}
             checkSeatAvailability={checkSeatAvailability}
+            showPaymentMeta={false}
           />
         </div>
       </div>

@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Organization from "@/models/Organization";
 import { requireAuth } from "@/lib/requireAuth";
+import { doShiftsOverlap } from "@/lib/shiftOverlap";
 
 interface ShiftInput {
   shiftName: string;
-  totalSeats: number;
+  totalSeats?: number;
   startTime?: string;
   endTime?: string;
 }
@@ -15,22 +16,10 @@ interface SetupPayload {
   shifts: ShiftInput[];
 }
 
-function timeToMinutes(time: string) {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
-}
-
 function hasOverlap(shifts: ShiftInput[]) {
-  const timedShifts = shifts.filter((s) => s.startTime && s.endTime);
-
-  for (let i = 0; i < timedShifts.length; i++) {
-    for (let j = i + 1; j < timedShifts.length; j++) {
-      const aStart = timeToMinutes(timedShifts[i].startTime as string);
-      const aEnd = timeToMinutes(timedShifts[i].endTime as string);
-      const bStart = timeToMinutes(timedShifts[j].startTime as string);
-      const bEnd = timeToMinutes(timedShifts[j].endTime as string);
-
-      if (aStart < bEnd && bStart < aEnd) {
+  for (let i = 0; i < shifts.length; i++) {
+    for (let j = i + 1; j < shifts.length; j++) {
+      if (doShiftsOverlap(shifts[i], shifts[j])) {
         return true;
       }
     }
@@ -54,18 +43,6 @@ function validatePayload(payload: SetupPayload) {
     if (!shift.shiftName?.trim()) {
       return "Shift name is required";
     }
-    if (!shift.totalSeats || shift.totalSeats <= 0) {
-      return "Each shift must have seats greater than 0";
-    }
-  }
-
-  const totalShiftSeats = shifts.reduce(
-    (sum, shift) => sum + Number(shift.totalSeats),
-    0
-  );
-
-  if (totalShiftSeats > totalSeats) {
-    return "Shift seats cannot exceed total seats";
   }
 
   if (hasOverlap(shifts)) {
@@ -96,9 +73,15 @@ async function saveSeatConfig(payload: SetupPayload, allowConfiguredUpdate: bool
     return NextResponse.json({ message: validationError }, { status: 400 });
   }
 
+  const normalizedShifts: ShiftInput[] = payload.shifts.map((shift) => ({
+    ...shift,
+    shiftName: shift.shiftName.trim(),
+    totalSeats: payload.totalSeats,
+  }));
+
   organization.seatConfig = {
     totalSeats: payload.totalSeats,
-    shifts: payload.shifts,
+    shifts: normalizedShifts,
   };
   organization.isConfigured = true;
   await organization.save();

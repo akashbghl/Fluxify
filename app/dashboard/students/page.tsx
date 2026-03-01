@@ -7,6 +7,7 @@ import StudentCard, {
   Student,
 } from "@/components/students/StudentCard";
 import Button from "@/components/ui/Button";
+import { normalizeStudentShiftNames } from "@/lib/studentShift";
 
 export default function StudentsPage() {
   const router = useRouter();
@@ -56,7 +57,10 @@ export default function StudentsPage() {
         ${s.name}
         ${s.phone}
         ${s.email || ""}
-        ${s.shiftName || ""}
+        ${normalizeStudentShiftNames({
+          shiftName: s.shiftName,
+          shiftNames: s.shiftNames,
+        }).join(" ")}
         ${s.seatNumber || ""}
       `
         .toLowerCase()
@@ -99,7 +103,7 @@ export default function StudentsPage() {
         prev.filter((s) => s._id !== id)
       );
 
-    } catch (error) {
+    } catch {
       alert("Delete failed");
     }
   };

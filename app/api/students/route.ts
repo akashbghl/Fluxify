@@ -1,40 +1,114 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Student from "@/models/Student";
+import Payment from "@/models/Payment";
 import { requireAuth } from "@/lib/requireAuth";
-import {
-  validate,
-  studentCreateSchema,
-  studentUpdateSchema,
-} from "@/lib/validators";
+import { validate, studentCreateSchema, studentUpdateSchema } from "@/lib/validators";
 import Organization from "@/models/Organization";
+import { getOverlappingShiftNames } from "@/lib/shiftOverlap";
+import { getPrimaryShiftName, normalizeStudentShiftNames } from "@/lib/studentShift";
 
+const PLAN_MAP: Record<string, number> = {
+  "1_MONTH": 1,
+  "3_MONTH": 3,
+  "6_MONTH": 6,
+  "12_MONTH": 12,
+};
 
-/* ============================
-   GET → Fetch students (ORG SAFE)
-============================ */
+function calculateStatusAndExpiry(startDateRaw: string | Date, plan: string) {
+  const startDate = new Date(startDateRaw);
+  const expiryDate = new Date(startDate);
+  expiryDate.setMonth(expiryDate.getMonth() + PLAN_MAP[plan]);
+
+  const today = new Date();
+  const status = expiryDate < today ? "EXPIRED" : "ACTIVE";
+  return { startDate, expiryDate, status };
+}
+
+function getRequestedShiftNames(payload: { shiftName?: string; shiftNames?: string[] }) {
+  return normalizeStudentShiftNames(payload);
+}
+
+async function findSeatConflict(params: {
+  organizationId: string;
+  shiftNames: string[];
+  seatNumber: number;
+  excludeStudentId?: string;
+}) {
+  const organization = await Organization.findById(params.organizationId);
+  if (!organization?.seatConfig) {
+    throw new Error("Organization not configured");
+  }
+
+  const shifts = organization.seatConfig.shifts || [];
+  const allShiftNames = new Set(shifts.map((s: { shiftName: string }) => s.shiftName));
+
+  for (const shiftName of params.shiftNames) {
+    if (!allShiftNames.has(shiftName)) {
+      throw new Error(`Invalid shift selected: ${shiftName}`);
+    }
+  }
+
+  if (params.seatNumber > organization.seatConfig.totalSeats) {
+    throw new Error(
+      `Seat number exceeds total capacity (${organization.seatConfig.totalSeats})`
+    );
+  }
+
+  const overlapSet = new Set<string>();
+  params.shiftNames.forEach((shiftName) => {
+    getOverlappingShiftNames(shiftName, shifts).forEach((name) => overlapSet.add(name));
+  });
+
+  const query: {
+    organizationId: string;
+    seatNumber: number;
+    status: "ACTIVE";
+    _id?: { $ne: string };
+  } = {
+    organizationId: params.organizationId,
+    seatNumber: params.seatNumber,
+    status: "ACTIVE",
+  };
+
+  if (params.excludeStudentId) {
+    query._id = { $ne: params.excludeStudentId };
+  }
+
+  const candidates = await Student.find(query).select("name shiftName shiftNames");
+
+  for (const candidate of candidates) {
+    const candidateShiftNames = normalizeStudentShiftNames({
+      shiftName: candidate.shiftName,
+      shiftNames: candidate.shiftNames,
+    });
+
+    const conflictingShift = candidateShiftNames.find((name) => overlapSet.has(name));
+    if (conflictingShift) {
+      return {
+        student: candidate,
+        conflictingShift,
+      };
+    }
+  }
+
+  return null;
+}
+
 export async function GET() {
   try {
     await connectDB();
-
-    const auth = await requireAuth();   // ✅ Extract from cookie
-    const organizationId = auth.organizationId;
-
+    const auth = await requireAuth();
     const students = await Student.find({
-      organizationId,
+      organizationId: auth.organizationId,
     }).sort({ createdAt: -1 });
 
-
-    return NextResponse.json({
-      success: true,
-      students,
-    });
-  } catch (error: any) {
-    console.error("Fetch Students Error:", error.message);
-
+    return NextResponse.json({ success: true, students });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json(
-      { success: false, message: error.message },
-      { status: error.message === "Unauthorized" ? 401 : 500 }
+      { success: false, message },
+      { status: message === "Unauthorized" ? 401 : 500 }
     );
   }
 }
@@ -47,79 +121,104 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const data = validate(studentCreateSchema, body);
+    const shiftNames = getRequestedShiftNames({
+      shiftName: body.shiftName ?? data.shiftName,
+      shiftNames: body.shiftNames ?? data.shiftNames,
+    });
 
-    if (!data.shiftName || !data.seatNumber) {
+    if (shiftNames.length === 0 || !data.seatNumber) {
       return NextResponse.json(
-        { success: false, message: "Shift and seat number required" },
+        { success: false, message: "At least one shift and seat number required" },
         { status: 400 }
       );
     }
 
-    /* ============================
-       Calculate Expiry
-    ============================ */
+    const organization = await Organization.findById(organizationId);
+    if (organization?.plan === "FREE" && organization.seatConfig?.totalSeats >= 50) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Free plan allows max 50 students. Please upgrade your plan.",
+        },
+        { status: 400 }
+      );
+    }
 
-    const PLAN_MAP: Record<string, number> = {
-      "1_MONTH": 1,
-      "3_MONTH": 3,
-      "6_MONTH": 6,
-      "12_MONTH": 12,
-    };
-
-    const startDate = new Date(data.startDate);
-    const expiryDate = new Date(startDate);
-    expiryDate.setMonth(
-      expiryDate.getMonth() + PLAN_MAP[data.plan]
+    const { startDate, expiryDate, status } = calculateStatusAndExpiry(
+      data.startDate,
+      data.plan
     );
 
-    const today = new Date();
-    const status =
-      expiryDate < today ? "EXPIRED" : "ACTIVE";
+    if (status === "ACTIVE") {
+      const conflict = await findSeatConflict({
+        organizationId,
+        shiftNames,
+        seatNumber: data.seatNumber,
+      });
 
-    const organization = await Organization.findById(organizationId);
-    if(organization?.plan === "FREE" && organization.seatConfig?.totalSeats>=50) {
-      return NextResponse.json(
-        { success: false, message: "Free plan allows max 50 students. Please upgrade your plan." },
-        { status: 400 }
-      );    
+      if (conflict) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Seat ${data.seatNumber} is already occupied in overlapping shift "${conflict.conflictingShift}" by ${conflict.student.name}.`,
+          },
+          { status: 400 }
+        );
+      }
     }
-         
+
+    const {
+      paymentMode,
+      transactionId,
+      paymentRemarks,
+      ...studentData
+    } = data;
+    const initialPaidAmount = Number(studentData.feesPaid || 0);
+
     const student = await Student.create({
-      ...data,
+      ...studentData,
+      feesPaid: initialPaidAmount,
+      shiftNames,
+      shiftName: getPrimaryShiftName({ shiftNames }),
       startDate,
       expiryDate,
       status,
       organizationId,
     });
 
+    if (initialPaidAmount > 0) {
+      try {
+        await Payment.create({
+          student: student._id,
+          organizationId,
+          amount: initialPaidAmount,
+          mode: paymentMode || "CASH",
+          transactionId: transactionId || undefined,
+          remarks: paymentRemarks || "Initial enrollment payment",
+          status: "SUCCESS",
+        });
+      } catch (paymentError: unknown) {
+        await Student.findByIdAndDelete(student._id);
+        const paymentMessage =
+          paymentError instanceof Error
+            ? paymentError.message
+            : "Failed to record initial payment";
+        throw new Error(paymentMessage);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: "Student added successfully",
       student,
+      initialPaymentRecorded: initialPaidAmount > 0,
     });
-
-  } catch (error: any) {
-
-    /* HANDLE DUPLICATE SEAT ERROR */
-    if (error.code === 11000) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Seat already booked in this shift",
-        },
-        { status: 400 }
-      );
-    }
-
-    console.error("Create Student Error:", error.message);
-
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to create student";
+    return NextResponse.json({ success: false, message }, { status: 400 });
   }
 }
-// update student
+
 export async function PUT(req: NextRequest) {
   try {
     await connectDB();
@@ -137,10 +236,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const data = validate(studentUpdateSchema, payload);
-
-    /* ============================
-       Fetch existing student
-    ============================ */
+    const { ...safeData } = data;
 
     const existingStudent = await Student.findOne({
       _id: id,
@@ -154,46 +250,65 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    /* ============================
-       Recalculate Expiry
-    ============================ */
-
-    const PLAN_MAP: Record<string, number> = {
-      "1_MONTH": 1,
-      "3_MONTH": 3,
-      "6_MONTH": 6,
-      "12_MONTH": 12,
-    };
-
-    const startDate = data.startDate
-      ? new Date(data.startDate)
-      : existingStudent.startDate;
-
-    const plan = data.plan ?? existingStudent.plan;
-
+    const startDate = safeData.startDate ? new Date(safeData.startDate) : existingStudent.startDate;
+    const plan = safeData.plan ?? existingStudent.plan;
     const expiryDate = new Date(startDate);
-    expiryDate.setMonth(
-      expiryDate.getMonth() + PLAN_MAP[plan]
-    );
-
+    expiryDate.setMonth(expiryDate.getMonth() + PLAN_MAP[plan]);
     const today = new Date();
-    const status =
-      expiryDate < today ? "EXPIRED" : "ACTIVE";
+    const status = expiryDate < today ? "EXPIRED" : "ACTIVE";
 
-    /* ============================
-       Final update payload
-    ============================ */
+    const nextShiftNamesRaw =
+      (Array.isArray(payload.shiftNames) ? payload.shiftNames : undefined) ||
+      safeData.shiftNames ||
+      (payload.shiftName ? [payload.shiftName] : undefined) ||
+      (safeData.shiftName ? [safeData.shiftName] : undefined);
+    const nextShiftNames = nextShiftNamesRaw
+      ? normalizeStudentShiftNames({
+          shiftNames: nextShiftNamesRaw,
+        })
+      : normalizeStudentShiftNames({
+          shiftName: existingStudent.shiftName,
+          shiftNames: existingStudent.shiftNames,
+        });
 
-    const updatePayload = {
-      ...data,
-      startDate,
-      expiryDate,
-      status,
-    };
+    const nextSeatNumber = safeData.seatNumber ?? existingStudent.seatNumber;
+
+    if (nextShiftNames.length === 0 || !nextSeatNumber) {
+      return NextResponse.json(
+        { success: false, message: "At least one shift and seat number required" },
+        { status: 400 }
+      );
+    }
+
+    if (status === "ACTIVE") {
+      const conflict = await findSeatConflict({
+        organizationId,
+        shiftNames: nextShiftNames,
+        seatNumber: nextSeatNumber,
+        excludeStudentId: id,
+      });
+
+      if (conflict) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Seat ${nextSeatNumber} is already occupied in overlapping shift "${conflict.conflictingShift}" by ${conflict.student.name}.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     const updatedStudent = await Student.findOneAndUpdate(
-      { _id: id, organizationId },
-      updatePayload,
+        { _id: id, organizationId },
+      {
+        ...safeData,
+        shiftNames: nextShiftNames,
+        shiftName: getPrimaryShiftName({ shiftNames: nextShiftNames }),
+        startDate,
+        expiryDate,
+        status,
+      },
       { new: true, runValidators: true }
     );
 
@@ -202,37 +317,16 @@ export async function PUT(req: NextRequest) {
       message: "Student updated successfully",
       student: updatedStudent,
     });
-
-  } catch (error: any) {
-
-    if (error.code === 11000) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Seat already booked in this shift",
-        },
-        { status: 400 }
-      );
-    }
-
-    console.error("Update Student Error:", error.message);
-
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to update student";
+    return NextResponse.json({ success: false, message }, { status: 400 });
   }
 }
 
-
-/* ============================
-   DELETE → Remove student (ORG SAFE)
-============================ */
 export async function DELETE(req: NextRequest) {
   try {
     await connectDB();
-
-    const auth = await requireAuth();   // ✅ Extract from cookie
+    const auth = await requireAuth();
     const organizationId = auth.organizationId;
 
     const { searchParams } = new URL(req.url);
@@ -247,7 +341,7 @@ export async function DELETE(req: NextRequest) {
 
     const deletedStudent = await Student.findOneAndDelete({
       _id: id,
-      organizationId, // ✅ org protected
+      organizationId,
     });
 
     if (!deletedStudent) {
@@ -264,12 +358,8 @@ export async function DELETE(req: NextRequest) {
       success: true,
       message: "Student deleted successfully",
     });
-  } catch (error: any) {
-    console.error("Delete Student Error:", error.message);
-
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

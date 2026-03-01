@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,30 +8,18 @@ import Loader from "@/components/ui/Loader";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Plus, Trash2, ArrowLeftRight, Clock3 } from "lucide-react";
+import { doShiftsOverlap } from "@/lib/shiftOverlap";
 
 interface ShiftInput {
   shiftName: string;
-  totalSeats: number;
   startTime?: string;
   endTime?: string;
 }
 
-function timeToMinutes(time: string) {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
-}
-
 function hasOverlap(shifts: ShiftInput[]) {
-  const timedShifts = shifts.filter((s) => s.startTime && s.endTime);
-
-  for (let i = 0; i < timedShifts.length; i++) {
-    for (let j = i + 1; j < timedShifts.length; j++) {
-      const aStart = timeToMinutes(timedShifts[i].startTime as string);
-      const aEnd = timeToMinutes(timedShifts[i].endTime as string);
-      const bStart = timeToMinutes(timedShifts[j].startTime as string);
-      const bEnd = timeToMinutes(timedShifts[j].endTime as string);
-
-      if (aStart < bEnd && bStart < aEnd) return true;
+  for (let i = 0; i < shifts.length; i++) {
+    for (let j = i + 1; j < shifts.length; j++) {
+      if (doShiftsOverlap(shifts[i], shifts[j])) return true;
     }
   }
 
@@ -54,26 +42,17 @@ export default function EditShiftsPage() {
     setShifts(
       organization.seatConfig.shifts.map((shift) => ({
         shiftName: shift.shiftName,
-        totalSeats: shift.totalSeats,
         startTime: shift.startTime || "",
         endTime: shift.endTime || "",
       }))
     );
   }, [organization]);
 
-  const usedSeats = useMemo(
-    () => shifts.reduce((sum, shift) => sum + Number(shift.totalSeats || 0), 0),
-    [shifts]
-  );
-
-  const availableBalance = totalSeats - usedSeats;
-
   const addShift = () => {
     setShifts((prev) => [
       ...prev,
       {
         shiftName: `Shift ${prev.length + 1}`,
-        totalSeats: 0,
         startTime: "",
         endTime: "",
       },
@@ -87,7 +66,7 @@ export default function EditShiftsPage() {
   const updateShift = (
     index: number,
     field: keyof ShiftInput,
-    value: string | number
+    value: string
   ) => {
     setShifts((prev) => {
       const updated = [...prev];
@@ -103,10 +82,6 @@ export default function EditShiftsPage() {
     if (!totalSeats || totalSeats <= 0) return "Total seats must be greater than 0.";
     if (shifts.length === 0) return "Add at least one shift.";
     if (shifts.some((s) => !s.shiftName.trim())) return "All shifts must have a name.";
-    if (shifts.some((s) => !s.totalSeats || s.totalSeats <= 0)) {
-      return "Each shift must have seats greater than 0.";
-    }
-    if (usedSeats > totalSeats) return "Sum of shift seats cannot exceed total seats.";
     if (hasOverlap(shifts)) return "Shift timings overlap. Please adjust timings.";
     return null;
   };
@@ -203,23 +178,13 @@ export default function EditShiftsPage() {
               min={1}
             />
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-xs text-slate-500">Seats Assigned</p>
-              <p className="mt-1 text-xl font-semibold text-slate-900">{usedSeats}</p>
+              <p className="text-xs text-slate-500">Shift Count</p>
+              <p className="mt-1 text-xl font-semibold text-slate-900">{shifts.length}</p>
             </div>
-            <div
-              className={`rounded-xl border px-4 py-3 ${
-                availableBalance < 0
-                  ? "border-rose-200 bg-rose-50"
-                  : "border-emerald-200 bg-emerald-50"
-              }`}
-            >
-              <p className="text-xs text-slate-500">Seat Balance</p>
-              <p
-                className={`mt-1 text-xl font-semibold ${
-                  availableBalance < 0 ? "text-rose-700" : "text-emerald-700"
-                }`}
-              >
-                {availableBalance}
+            <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+              <p className="text-xs text-slate-500">Seat Rule</p>
+              <p className="mt-1 text-sm font-semibold text-sky-800">
+                Same seat pool shared across all shifts
               </p>
             </div>
           </div>
@@ -240,20 +205,11 @@ export default function EditShiftsPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <Input
                     label="Shift Name"
                     value={shift.shiftName}
                     onChange={(e) => updateShift(index, "shiftName", e.target.value)}
-                  />
-                  <Input
-                    type="number"
-                    label="Shift Seats"
-                    min={1}
-                    value={shift.totalSeats}
-                    onChange={(e) =>
-                      updateShift(index, "totalSeats", Number(e.target.value))
-                    }
                   />
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">Start Time</label>
