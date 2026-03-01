@@ -37,6 +37,7 @@ interface StudentFormProps {
     seatNumber: number
   ) => Promise<boolean>;
   showPaymentMeta?: boolean;
+  allowMultiShift?: boolean;
 }
 
 const PLAN_OPTIONS = [
@@ -53,6 +54,7 @@ export default function StudentForm({
   shifts,
   checkSeatAvailability,
   showPaymentMeta = true,
+  allowMultiShift = true,
 }: StudentFormProps) {
   const [form, setForm] = useState<StudentFormData>({
     name: "",
@@ -129,9 +131,13 @@ export default function StudentForm({
   const toggleShift = (shiftName: string) => {
     setForm((prev) => {
       const exists = prev.shiftNames.includes(shiftName);
-      const shiftNames = exists
+      let shiftNames = exists
         ? prev.shiftNames.filter((s) => s !== shiftName)
         : [...prev.shiftNames, shiftName];
+
+      if (!allowMultiShift && shiftNames.length > 1) {
+        shiftNames = [shiftName];
+      }
 
       return { ...prev, shiftNames };
     });
@@ -202,6 +208,11 @@ export default function StudentForm({
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Shifts (Select one or more)</label>
+        {!allowMultiShift && (
+          <p className="text-xs text-amber-700">
+            Free plan: only one shift per student. Upgrade for multi-shift enrollment.
+          </p>
+        )}
         {form.shiftNames.length > 0 && (
           <p className="text-xs text-gray-500">
             Selected: {form.shiftNames.join(", ")}

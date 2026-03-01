@@ -7,6 +7,7 @@ import { validate, studentCreateSchema, studentUpdateSchema } from "@/lib/valida
 import Organization from "@/models/Organization";
 import { getOverlappingShiftNames } from "@/lib/shiftOverlap";
 import { getPrimaryShiftName, normalizeStudentShiftNames } from "@/lib/studentShift";
+import { canUseMultiShiftEnrollment, isFreePlan } from "@/lib/planLimits";
 
 const PLAN_MAP: Record<string, number> = {
   "1_MONTH": 1,
@@ -144,6 +145,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (isFreePlan(organization?.plan) && !canUseMultiShiftEnrollment(organization?.plan) && shiftNames.length > 1) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Multi-shift enrollment is available on PRO plan. Please upgrade.",
+        },
+        { status: 403 }
+      );
+    }
+
     const { startDate, expiryDate, status } = calculateStatusAndExpiry(
       data.startDate,
       data.plan
@@ -277,6 +288,21 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json(
         { success: false, message: "At least one shift and seat number required" },
         { status: 400 }
+      );
+    }
+
+    const organization = await Organization.findById(organizationId).select("plan");
+    if (
+      isFreePlan(organization?.plan) &&
+      !canUseMultiShiftEnrollment(organization?.plan) &&
+      nextShiftNames.length > 1
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Multi-shift enrollment is available on PRO plan. Please upgrade.",
+        },
+        { status: 403 }
       );
     }
 

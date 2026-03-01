@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import Organization from "@/models/Organization";
 import { requireAuth } from "@/lib/requireAuth";
 import { doShiftsOverlap } from "@/lib/shiftOverlap";
+import { maxShiftCountForPlan } from "@/lib/planLimits";
 
 interface ShiftInput {
   shiftName: string;
@@ -28,7 +29,7 @@ function hasOverlap(shifts: ShiftInput[]) {
   return false;
 }
 
-function validatePayload(payload: SetupPayload) {
+function validatePayload(payload: SetupPayload, plan?: string) {
   const { totalSeats, shifts } = payload;
 
   if (!totalSeats || totalSeats <= 0) {
@@ -37,6 +38,11 @@ function validatePayload(payload: SetupPayload) {
 
   if (!Array.isArray(shifts) || shifts.length === 0) {
     return "At least one shift is required";
+  }
+
+  const maxShifts = maxShiftCountForPlan(plan);
+  if (shifts.length > maxShifts) {
+    return `Your plan allows up to ${maxShifts} shifts. Please upgrade to add more.`;
   }
 
   for (const shift of shifts) {
@@ -68,7 +74,7 @@ async function saveSeatConfig(payload: SetupPayload, allowConfiguredUpdate: bool
     );
   }
 
-  const validationError = validatePayload(payload);
+  const validationError = validatePayload(payload, organization.plan);
   if (validationError) {
     return NextResponse.json({ message: validationError }, { status: 400 });
   }

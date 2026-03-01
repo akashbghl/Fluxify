@@ -13,6 +13,7 @@ export default function AddStudentPage() {
   const router = useRouter();
   const { organization } = useAuth();
   const [saving, setSaving] = useState(false);
+  const allowMultiShift = organization?.plan !== "FREE";
 
   const shifts =
     organization?.seatConfig?.shifts?.map((shift) => ({
@@ -104,6 +105,7 @@ export default function AddStudentPage() {
             shifts={shifts}
             checkSeatAvailability={checkSeatAvailability}
             showPaymentMeta
+            allowMultiShift={allowMultiShift}
           />
         </div>
       </div>

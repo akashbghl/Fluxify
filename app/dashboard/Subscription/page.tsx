@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import BlurredCircle from '@/components/ui/BlurredCircle';
-const page = () => {
+
+const Page = () => {
     const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
     const { user, refreshUser } = useAuth();
     const router = useRouter();
@@ -51,29 +52,27 @@ const page = () => {
                 name: "Fluxify",
                 description: "Pro Subscription",
                 order_id: order.id,
-
                 handler: function () {
                     router.push("/payment-success");
                 },
-
                 prefill: {
                     email: user.email,
                 },
-
                 modal: {
                     ondismiss: function () {
                         toast.info("Payment cancelled");
                     },
                 },
-
                 theme: {
                     color: "#7f22fe",
                 },
             };
 
-            const razorpay = new (window as any).Razorpay(options);
+            const RazorpayCtor = (window as Window & {
+                Razorpay: new (opts: unknown) => { open: () => void };
+            }).Razorpay;
+            const razorpay = new RazorpayCtor(options);
             razorpay.open();
-
         } catch (error) {
             console.error(error);
             toast.error("Something went wrong");
@@ -86,41 +85,41 @@ const page = () => {
 
     return (
         <ProtectedRoute>
-            <div className=" bg-[#0B0F19] text-white px-6 py-16">
-                <div className="max-w-6xl mx-auto">
-
-                    <section id="pricing" className="">
+            <div className="relative overflow-hidden bg-[#090E19] px-4 py-12 text-white sm:px-6 sm:py-16 lg:px-8">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(34,197,94,0.14),transparent_40%),radial-gradient(circle_at_80%_10%,rgba(99,102,241,0.2),transparent_35%),radial-gradient(circle_at_65%_75%,rgba(59,130,246,0.12),transparent_40%)]" />
+                <div className="relative mx-auto max-w-6xl">
+                    <section id="pricing">
                         <BlurredCircle classname="-left-20 -top-30" />
                         <BlurredCircle classname="left-auto top-120" />
-                        <div className="mx-auto max-w-7xl px-6">
-
-                            {/* Header */}
+                        <div className="mx-auto max-w-7xl">
                             <div className="mx-auto max-w-3xl text-center">
-                                <h2 className="text-4xl font-bold tracking-tight font-arial text-white sm:text-4xl">
-                                    Find the <span className="text-pink-400/70">Perfect Plan</span> for Your Needs
+                                <p className="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-medium tracking-wide text-slate-200">
+                                    SUBSCRIPTION PLANS
+                                </p>
+                                <h2 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
+                                    Find the <span className="text-indigo-300">Perfect Plan</span> for Your Needs
                                 </h2>
-                                <p className="mt-2 text-sm text-gray-500">
+                                <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
                                     Flexible plans designed for libraries and growing institutions.
-                                    Start free and upgrade when you’re ready.
+                                    Start free and upgrade when you are ready.
                                 </p>
 
-                                {/* Billing Toggle */}
                                 <div className="mt-8 flex justify-center">
-                                    <div className="bg-[#141A2A] p-1 rounded-lg flex">
+                                    <div className="inline-flex rounded-xl border border-white/10 bg-slate-900/70 p-1 backdrop-blur">
                                         <button
                                             onClick={() => setBilling("monthly")}
-                                            className={`px-6 py-2 text-sm rounded-md transition ${billing === "monthly"
-                                                ? "bg-violet-600 text-white"
-                                                : "text-gray-400"
+                                            className={`rounded-lg px-6 py-2 text-sm font-medium transition ${billing === "monthly"
+                                                ? "bg-indigo-600 text-white shadow-md shadow-indigo-700/30"
+                                                : "text-slate-300 hover:text-white"
                                                 }`}
                                         >
                                             Monthly
                                         </button>
                                         <button
                                             onClick={() => setBilling("annual")}
-                                            className={`px-6 py-2 text-sm rounded-md transition ${billing === "annual"
-                                                ? "bg-violet-600 text-white"
-                                                : "text-gray-400"
+                                            className={`rounded-lg px-6 py-2 text-sm font-medium transition ${billing === "annual"
+                                                ? "bg-indigo-600 text-white shadow-md shadow-indigo-700/30"
+                                                : "text-slate-300 hover:text-white"
                                                 }`}
                                         >
                                             Annual (Save 20%)
@@ -128,61 +127,54 @@ const page = () => {
                                     </div>
                                 </div>
 
-                                {/* Billing Hint */}
-                                <p className="mt-3 text-sm text-violet-600 font-medium">
+                                <p className="mt-3 text-sm font-medium text-emerald-300">
                                     Save 20% with annual billing
                                 </p>
                             </div>
 
-                            {/* Pricing Grid */}
-                            <div className="mt-10 grid grid-cols-1 max-md:gap-8 gap-2 md:grid-cols-3">
-
-                                {/* Starter Plan */}
-                                <div className="flex flex-col border border-gray-700/80 p-8 shadow-sm transition hover:shadow-md">
+                            <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
+                                <div className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-7 shadow-lg shadow-black/20 transition hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05]">
                                     <h3 className="text-lg font-semibold text-white">Starter</h3>
-                                    <p className="mt-4 text-4xl font-bold text-gray-300">Free</p>
-                                    <p className="mt-2 text-sm text-gray-500">
+                                    <p className="mt-4 text-4xl font-bold text-slate-100">Free</p>
+                                    <p className="mt-2 text-sm text-slate-300">
                                         Perfect for small libraries getting started.
                                     </p>
 
-                                    <ul className="mt-8 space-y-4 text-sm text-gray-600 flex-1">
-                                        <li>✔ Up to 50 students</li>
-                                        <li>✔ Basic analytics dashboard</li>
-                                        <li>✔ Issue & return tracking</li>
-                                        <li>✔ Email support</li>
+                                    <ul className="mt-8 flex-1 space-y-3 text-sm text-slate-200">
+                                        <li>&#10003; Up to 50 students</li>
+                                        <li>&#10003; Basic analytics dashboard</li>
+                                        <li>&#10003; Issue and return tracking</li>
+                                        <li>&#10003; Email support</li>
                                     </ul>
 
-                                    <button className="cursor-pointer mt-8 rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800">
+                                    <button className="mt-8 cursor-pointer rounded-xl border border-white/10 bg-slate-900/80 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
                                         {user?.organizationSubscription === "FREE" ? "Current Plan" : "Get Started Free"}
                                     </button>
                                 </div>
 
-                                {/* Pro Plan (Highlighted) */}
-                                <div className="relative flex flex-col  border-2 border-violet-600/60 p-8 shadow-lg scale-105">
-
-                                    {/* Badge */}
-                                    <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-violet-600 px-4 py-1 text-xs font-semibold text-white">
+                                <div className="relative flex scale-[1.01] flex-col rounded-2xl border-2 border-indigo-400/60 bg-gradient-to-b from-indigo-500/10 to-blue-600/5 p-7 shadow-xl shadow-indigo-900/20 lg:scale-105">
+                                    <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-indigo-500 px-4 py-1 text-xs font-semibold text-white shadow-lg shadow-indigo-800/40">
                                         Most Popular
                                     </span>
 
                                     <h3 className="text-lg font-semibold text-white">Pro</h3>
                                     <p className="mt-4 text-4xl font-bold text-white">
                                         {billing === "monthly" ? (
-                                            <>₹149 <span className="text-base font-medium text-gray-500">/month</span></>
+                                            <>&#8377;149 <span className="text-base font-medium text-slate-300">/month</span></>
                                         ) : (
-                                            <>₹1499 <span className="text-base font-medium text-gray-500">/year</span></>
+                                            <>&#8377;1499 <span className="text-base font-medium text-slate-300">/year</span></>
                                         )}
                                     </p>
-                                    <p className="mt-2 text-sm text-gray-500">
+                                    <p className="mt-2 text-sm text-slate-200">
                                         Best for growing institutions managing large collections.
                                     </p>
 
-                                    <ul className="mt-8 space-y-4 text-sm text-gray-700 flex-1">
-                                        <li>✔ Unlimited students</li>
-                                        <li>✔ Advanced analytics & reports</li>
-                                        <li>✔ WhatsApp reminders</li>
-                                        <li>✔ Fine management system</li>
-                                        <li>✔ Priority support</li>
+                                    <ul className="mt-8 flex-1 space-y-3 text-sm text-slate-100">
+                                        <li>&#10003; Unlimited students</li>
+                                        <li>&#10003; Advanced analytics and reports</li>
+                                        <li>&#10003; WhatsApp reminders</li>
+                                        <li>&#10003; Fine management system</li>
+                                        <li>&#10003; Priority support</li>
                                     </ul>
 
                                     <button
@@ -192,9 +184,9 @@ const page = () => {
                                             }
                                         }}
                                         disabled={isProActive}
-                                        className={`mt-8 rounded-lg px-6 py-3 text-sm font-semibold text-white transition ${isProActive
-                                            ? "bg-gray-400 cursor-not-allowed"
-                                            : "bg-violet-600 hover:bg-violet-700 cursor-pointer"
+                                        className={`mt-8 rounded-xl px-6 py-3 text-sm font-semibold text-white transition ${isProActive
+                                            ? "cursor-not-allowed bg-slate-500"
+                                            : "cursor-pointer bg-indigo-500 shadow-lg shadow-indigo-800/40 hover:bg-indigo-400"
                                             }`}
                                     >
                                         {isProActive && user?.subscriptionExpiry
@@ -205,41 +197,36 @@ const page = () => {
                                     </button>
                                 </div>
 
-                                {/* Enterprise Plan */}
-                                <div className="flex flex-col border border-gray-700/80 p-8 shadow-sm transition hover:shadow-md">
+                                <div className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-7 shadow-lg shadow-black/20 transition hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05]">
                                     <h3 className="text-lg font-semibold text-white">Enterprise</h3>
                                     <p className="mt-4 text-4xl font-bold text-white">Custom</p>
-                                    <p className="mt-2 text-sm text-gray-500">
+                                    <p className="mt-2 text-sm text-slate-300">
                                         Tailored solutions for multi-branch institutions.
                                     </p>
 
-                                    <ul className="mt-8 space-y-4 text-sm text-gray-600 flex-1">
-                                        <li>✔ Custom integrations</li>
-                                        <li>✔ Dedicated account manager</li>
-                                        <li>✔ Staff onboarding & training</li>
-                                        <li>✔ SLA & priority support</li>
+                                    <ul className="mt-8 flex-1 space-y-3 text-sm text-slate-200">
+                                        <li>&#10003; Custom integrations</li>
+                                        <li>&#10003; Dedicated account manager</li>
+                                        <li>&#10003; Staff onboarding and training</li>
+                                        <li>&#10003; SLA and priority support</li>
                                     </ul>
 
-                                    <button className="cursor-pointer mt-8 rounded-lg border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-300 transition-all hover:text-black hover:bg-gray-100">
+                                    <button className="mt-8 cursor-pointer rounded-xl border border-slate-300/40 px-6 py-3 text-sm font-semibold text-slate-100 transition-all hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900">
                                         Contact Sales
                                     </button>
                                 </div>
-
                             </div>
-
                         </div>
                     </section>
 
-                    {/* Secure Note */}
-                    <div className="mt-12 text-center text-xs text-gray-500">
+                    <div className="mt-12 text-center text-xs text-slate-400">
                         Payments are securely processed via Razorpay.
                         You can cancel or change your plan anytime.
                     </div>
-
                 </div>
             </div>
         </ProtectedRoute>
     )
 }
 
-export default page
+export default Page

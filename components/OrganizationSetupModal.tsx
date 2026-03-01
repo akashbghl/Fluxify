@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Plus, Trash2 } from "lucide-react"
+import { maxShiftCountForPlan } from "@/lib/planLimits"
 
 interface ShiftInput {
   shiftName: string
@@ -12,12 +13,14 @@ interface ShiftInput {
 interface Props {
   open: boolean
   organizationId: string
+  organizationPlan?: "FREE" | "PRO" | "ENTERPRISE" | string
   onSuccess: () => void
 }
 
 export default function OrganizationSetupModal({
   open,
   organizationId,
+  organizationPlan,
   onSuccess,
 }: Props) {
   const [totalSeats, setTotalSeats] = useState<number>(50)
@@ -30,12 +33,17 @@ export default function OrganizationSetupModal({
   ])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const maxShifts = maxShiftCountForPlan(organizationPlan)
 
   if (!open) return null
 
   /* ================= ADD SHIFT ================= */
 
   const addShift = () => {
+    if (shifts.length >= maxShifts) {
+      setError(`Current plan allows up to ${maxShifts} shifts. Upgrade to add more.`)
+      return
+    }
     setShifts(prev => [
       ...prev,
       {
@@ -199,11 +207,15 @@ export default function OrganizationSetupModal({
         {/* ADD SHIFT */}
         <button
           onClick={addShift}
-          className="mt-6 flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+          className="mt-6 flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={shifts.length >= maxShifts}
         >
           <Plus size={18} />
           Add Another Shift
         </button>
+        <p className="mt-1 text-xs text-gray-500">
+          Shift limit on current plan: {maxShifts}
+        </p>
 
         {/* ERROR */}
         {error && (

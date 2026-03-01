@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Plus, Trash2, ArrowLeftRight, Clock3 } from "lucide-react";
 import { doShiftsOverlap } from "@/lib/shiftOverlap";
+import { maxShiftCountForPlan } from "@/lib/planLimits";
 
 interface ShiftInput {
   shiftName: string;
@@ -35,6 +36,7 @@ export default function EditShiftsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const maxShifts = maxShiftCountForPlan(organization?.plan);
 
   useEffect(() => {
     if (!organization?.seatConfig) return;
@@ -49,6 +51,10 @@ export default function EditShiftsPage() {
   }, [organization]);
 
   const addShift = () => {
+    if (shifts.length >= maxShifts) {
+      setError(`Current plan allows up to ${maxShifts} shifts. Upgrade to add more.`);
+      return;
+    }
     setShifts((prev) => [
       ...prev,
       {
@@ -243,11 +249,15 @@ export default function EditShiftsPage() {
           <button
             type="button"
             onClick={addShift}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={shifts.length >= maxShifts}
           >
             <Plus size={16} />
             Add Shift
           </button>
+          <p className="mt-1 text-xs text-slate-500">
+            Shift limit on current plan: {maxShifts}
+          </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
             <Button onClick={saveChanges} loading={saving}>

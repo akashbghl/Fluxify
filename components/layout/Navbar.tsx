@@ -59,11 +59,11 @@ export default function Navbar() {
 
   const today = useMemo(
     () =>
-      new Date().toLocaleDateString(undefined, {
+      new Intl.DateTimeFormat("en-US", {
         weekday: "short",
-        day: "numeric",
         month: "short",
-      }),
+        day: "numeric",
+      }).format(new Date()),
     []
   );
 
@@ -87,7 +87,7 @@ export default function Navbar() {
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           <div className="hidden rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 sm:inline-flex sm:items-center sm:gap-1.5">
             <Sparkles size={12} className="text-amber-500" />
-            <span>{today}</span>
+            <span suppressHydrationWarning>{today}</span>
           </div>
 
           <div className="relative w-full max-w-[240px] sm:max-w-sm">

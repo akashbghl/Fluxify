@@ -19,6 +19,7 @@ export default function EditStudentPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { organization } = useAuth();
+  const allowMultiShift = organization?.plan !== "FREE";
 
   interface StudentResponseItem {
     _id: string;
@@ -175,6 +176,7 @@ export default function EditStudentPage() {
             shifts={shifts}
             checkSeatAvailability={checkSeatAvailability}
             showPaymentMeta={false}
+            allowMultiShift={allowMultiShift}
           />
         </div>
       </div>

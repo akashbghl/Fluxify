@@ -71,9 +71,13 @@ export default function LibrarySeatPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (!organization?.seatConfig?.shifts) return;
+    const seatConfig = organization?.seatConfig;
+    if (!seatConfig?.shifts || seatConfig.shifts.length === 0) return;
 
     const fetchBookedSeats = async () => {
+      const currentSeatConfig = seatConfig;
+      if (!currentSeatConfig?.shifts || currentSeatConfig.shifts.length === 0) return;
+
       try {
         const res = await fetch("/api/students", { credentials: "include" });
         const data = (await res.json()) as StudentsApiResponse;
@@ -81,8 +85,8 @@ export default function LibrarySeatPage() {
 
         const bookedStudents = data.students;
 
-        const totalSeats = organization.seatConfig.totalSeats;
-        const allShifts = organization.seatConfig.shifts;
+        const totalSeats = currentSeatConfig.totalSeats;
+        const allShifts = currentSeatConfig.shifts;
 
         const dynamicShifts: ShiftData[] = allShifts.map((shift) => {
           const seats = generateSeats(totalSeats);
@@ -127,7 +131,7 @@ export default function LibrarySeatPage() {
     };
 
     fetchBookedSeats();
-  }, [organization]);
+  }, [organization?.seatConfig]);
 
   const activeShift = shifts[activeShiftIndex];
 
@@ -195,6 +199,7 @@ export default function LibrarySeatPage() {
         <OrganizationSetupModal
           open={!organization.isConfigured}
           organizationId={organization._id}
+          organizationPlan={organization.plan}
           onSuccess={() => window.location.reload()}
         />
       )}
