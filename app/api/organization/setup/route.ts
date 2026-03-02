@@ -1,140 +1,119 @@
-import { NextRequest, NextResponse } from "next/server"
-import { connectDB } from "@/lib/db"
-import Organization from "@/models/Organization"
+import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import Organization from "@/models/Organization";
+import { requireAuth } from "@/lib/requireAuth";
+import { doShiftsOverlap } from "@/lib/shiftOverlap";
+import { maxShiftCountForPlan } from "@/lib/planLimits";
 
-/**
- * Helper: Convert HH:mm to minutes
- */
-function timeToMinutes(time: string) {
-    const [hours, minutes] = time.split(":").map(Number)
-    return hours * 60 + minutes
+interface ShiftInput {
+  shiftName: string;
+  totalSeats?: number;
+  startTime?: string;
+  endTime?: string;
 }
 
-/**
- * Validate shift overlaps
- */
-function hasOverlap(shifts: any[]) {
-    const timedShifts = shifts.filter(s => s.startTime && s.endTime)
+interface SetupPayload {
+  totalSeats: number;
+  shifts: ShiftInput[];
+}
 
-    for (let i = 0; i < timedShifts.length; i++) {
-        for (let j = i + 1; j < timedShifts.length; j++) {
-            const aStart = timeToMinutes(timedShifts[i].startTime)
-            const aEnd = timeToMinutes(timedShifts[i].endTime)
-            const bStart = timeToMinutes(timedShifts[j].startTime)
-            const bEnd = timeToMinutes(timedShifts[j].endTime)
-
-            if (aStart < bEnd && bStart < aEnd) {
-                return true
-            }
-        }
+function hasOverlap(shifts: ShiftInput[]) {
+  for (let i = 0; i < shifts.length; i++) {
+    for (let j = i + 1; j < shifts.length; j++) {
+      if (doShiftsOverlap(shifts[i], shifts[j])) {
+        return true;
+      }
     }
+  }
 
-    return false
+  return false;
+}
+
+function validatePayload(payload: SetupPayload, plan?: string) {
+  const { totalSeats, shifts } = payload;
+
+  if (!totalSeats || totalSeats <= 0) {
+    return "Total seats must be greater than 0";
+  }
+
+  if (!Array.isArray(shifts) || shifts.length === 0) {
+    return "At least one shift is required";
+  }
+
+  const maxShifts = maxShiftCountForPlan(plan);
+  if (shifts.length > maxShifts) {
+    return `Your plan allows up to ${maxShifts} shifts. Please upgrade to add more.`;
+  }
+
+  for (const shift of shifts) {
+    if (!shift.shiftName?.trim()) {
+      return "Shift name is required";
+    }
+  }
+
+  if (hasOverlap(shifts)) {
+    return "Shift timings overlap";
+  }
+
+  return null;
+}
+
+async function saveSeatConfig(payload: SetupPayload, allowConfiguredUpdate: boolean) {
+  await connectDB();
+  const auth = await requireAuth();
+
+  const organization = await Organization.findById(auth.organizationId);
+  if (!organization) {
+    return NextResponse.json({ message: "Organization not found" }, { status: 404 });
+  }
+
+  if (!allowConfiguredUpdate && organization.isConfigured) {
+    return NextResponse.json(
+      { message: "Organization already configured" },
+      { status: 400 }
+    );
+  }
+
+  const validationError = validatePayload(payload, organization.plan);
+  if (validationError) {
+    return NextResponse.json({ message: validationError }, { status: 400 });
+  }
+
+  const normalizedShifts: ShiftInput[] = payload.shifts.map((shift) => ({
+    ...shift,
+    shiftName: shift.shiftName.trim(),
+    totalSeats: payload.totalSeats,
+  }));
+
+  organization.seatConfig = {
+    totalSeats: payload.totalSeats,
+    shifts: normalizedShifts,
+  };
+  organization.isConfigured = true;
+  await organization.save();
+
+  return NextResponse.json({
+    success: true,
+    message: allowConfiguredUpdate
+      ? "Shift configuration updated successfully"
+      : "Organization configured successfully",
+  });
 }
 
 export async function POST(req: NextRequest) {
-    try {
-        await connectDB()
+  try {
+    const body = (await req.json()) as SetupPayload;
+    return await saveSeatConfig(body, false);
+  } catch {
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+  }
+}
 
-        const body = await req.json()
-        const { organizationId, totalSeats, shifts } = body
-
-        if (!organizationId) {
-            return NextResponse.json(
-                { message: "Organization ID required" },
-                { status: 400 }
-            )
-        }
-
-        if (!totalSeats || totalSeats <= 0) {
-            return NextResponse.json(
-                { message: "Total seats must be greater than 0" },
-                { status: 400 }
-            )
-        }
-
-        if (!shifts || shifts.length === 0) {
-            return NextResponse.json(
-                { message: "At least one shift is required" },
-                { status: 400 }
-            )
-        }
-
-        /**
-         * Validate seat totals inside shifts
-         */
-        const totalShiftSeats = shifts.reduce(
-            (sum: number, shift: any) => sum + shift.totalSeats,
-            0
-        )
-
-        if (totalShiftSeats > totalSeats) {
-            return NextResponse.json(
-                { message: "Shift seats cannot exceed total seats" },
-                { status: 400 }
-            )
-        }
-
-        /**
-         * Validate time overlap
-         */
-        if (hasOverlap(shifts)) {
-            return NextResponse.json(
-                { message: "Shift timings overlap" },
-                { status: 400 }
-            )
-        }
-
-        /**
-         * Find Organization
-         */
-        const organization = await Organization.findById(organizationId)
-
-        if (!organization) {
-            return NextResponse.json(
-                { message: "Organization not found" },
-                { status: 404 }
-            )
-        }
-
-        /**
-         * Prevent reconfiguration (Optional)
-         */
-        if (organization.isConfigured) {
-            return NextResponse.json(
-                { message: "Organization already configured" },
-                { status: 400 }
-            )
-        }
-
-        /**
-         * Save Configuration
-         */
-        organization.seatConfig = {
-            totalSeats,
-            shifts,
-        }
-
-        Organization.findByIdAndUpdate(
-            organizationId,
-            {
-                seatConfig: organization.seatConfig,
-                isConfigured: true,
-            },
-            { new: true }
-        ).then(updatedOrg => console.log(updatedOrg))
-            .catch(err => console.error(err));
-            
-        return NextResponse.json({
-            success: true,
-            message: "Organization configured successfully",
-        })
-    } catch (error: any) {
-        console.error("Setup Error:", error)
-
-        return NextResponse.json(
-            { message: "Internal Server Error" },
-            { status: 500 }
-        )
-    }
+export async function PUT(req: NextRequest) {
+  try {
+    const body = (await req.json()) as SetupPayload;
+    return await saveSeatConfig(body, true);
+  } catch {
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+  }
 }

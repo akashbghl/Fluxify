@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { normalizeStudentShiftNames } from "@/lib/studentShift";
 
 interface ShiftOption {
   shiftName: string;
@@ -14,22 +15,29 @@ export interface StudentFormData {
   email?: string;
   phone: string;
   plan: "1_MONTH" | "3_MONTH" | "6_MONTH" | "12_MONTH";
-  shiftName?: string;
+  shiftNames: string[];
   seatNumber?: number;
   startDate: string;
   feesPaid: number;
   pendingFees?: number;
+  paymentMode?: "CASH" | "UPI" | "CARD" | "NETBANKING";
+  transactionId?: string;
+  paymentRemarks?: string;
 }
 
 interface StudentFormProps {
-  initialData?: Partial<StudentFormData>;
+  initialData?: Partial<StudentFormData> & {
+    shiftName?: string;
+  };
   onSubmit: (data: StudentFormData) => Promise<void> | void;
   loading?: boolean;
   shifts: ShiftOption[];
   checkSeatAvailability: (
-    shiftName: string,
+    shiftNames: string[],
     seatNumber: number
   ) => Promise<boolean>;
+  showPaymentMeta?: boolean;
+  allowMultiShift?: boolean;
 }
 
 const PLAN_OPTIONS = [
@@ -45,6 +53,8 @@ export default function StudentForm({
   loading,
   shifts,
   checkSeatAvailability,
+  showPaymentMeta = true,
+  allowMultiShift = true,
 }: StudentFormProps) {
   const [form, setForm] = useState<StudentFormData>({
     name: "",
@@ -52,10 +62,16 @@ export default function StudentForm({
     phone: "",
     plan: "1_MONTH",
     seatNumber: undefined,
-    shiftName: "",
+    shiftNames: normalizeStudentShiftNames({
+      shiftName: initialData?.shiftName,
+      shiftNames: initialData?.shiftNames,
+    }),
     startDate: new Date().toISOString().split("T")[0],
     feesPaid: 0,
     pendingFees: 0,
+    paymentMode: "CASH",
+    transactionId: "",
+    paymentRemarks: "",
     ...initialData,
   });
 
@@ -63,71 +79,98 @@ export default function StudentForm({
     "idle" | "checking" | "available" | "not_available"
   >("idle");
 
-  const handleChange = async (
+  useEffect(() => {
+    let active = true;
+
+    const runSeatCheck = async () => {
+      if (
+        form.shiftNames.length === 0 ||
+        !form.seatNumber ||
+        form.seatNumber <= 0
+      ) {
+        if (active) setSeatStatus("idle");
+        return;
+      }
+
+      if (active) setSeatStatus("checking");
+      try {
+        const available = await checkSeatAvailability(
+          form.shiftNames,
+          form.seatNumber
+        );
+        if (active) {
+          setSeatStatus(available ? "available" : "not_available");
+        }
+      } catch {
+        if (active) setSeatStatus("idle");
+      }
+    };
+
+    runSeatCheck();
+
+    return () => {
+      active = false;
+    };
+  }, [form.shiftNames, form.seatNumber, checkSeatAvailability]);
+
+  const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-
     const updatedValue =
-      name === "feesPaid" ||
-      name === "pendingFees" ||
-      name === "seatNumber"
+      name === "feesPaid" || name === "pendingFees" || name === "seatNumber"
         ? Number(value)
         : value;
 
-    const updatedForm = {
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       [name]: updatedValue,
-    };
+    }));
+  };
 
-    setForm(updatedForm);
+  const toggleShift = (shiftName: string) => {
+    setForm((prev) => {
+      const exists = prev.shiftNames.includes(shiftName);
+      let shiftNames = exists
+        ? prev.shiftNames.filter((s) => s !== shiftName)
+        : [...prev.shiftNames, shiftName];
 
-    // Reset status if shift changes
-    if (name === "shiftName") {
-      setSeatStatus("idle");
-    }
-
-    // Seat availability check
-    if (
-      (name === "seatNumber" || name === "shiftName") &&
-      updatedForm.shiftName &&
-      updatedForm.seatNumber &&
-      updatedForm.seatNumber > 0
-    ) {
-      setSeatStatus("checking");
-
-      try {
-        const available = await checkSeatAvailability(
-          updatedForm.shiftName,
-          updatedForm.seatNumber
-        );
-
-        setSeatStatus(available ? "available" : "not_available");
-      } catch {
-        setSeatStatus("idle");
+      if (!allowMultiShift && shiftNames.length > 1) {
+        shiftNames = [shiftName];
       }
-    }
+
+      return { ...prev, shiftNames };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (seatStatus === "not_available") {
-      alert("Seat is already booked!");
+    if (form.shiftNames.length === 0) {
+      alert("Please select at least one shift.");
       return;
     }
 
-    await onSubmit(form);
+    if (seatStatus === "not_available") {
+      alert("Seat is already booked for one of the selected/overlapping shifts.");
+      return;
+    }
+
+    await onSubmit({
+      ...form,
+      shiftNames: normalizeStudentShiftNames({
+        shiftNames: form.shiftNames,
+      }),
+    });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-
       <Input
         label="Full Name"
         name="name"
         value={form.name}
-        onChange={handleChange}
+        onChange={handleInputChange}
         required
       />
 
@@ -136,24 +179,23 @@ export default function StudentForm({
         name="email"
         type="email"
         value={form.email}
-        onChange={handleChange}
+        onChange={handleInputChange}
       />
 
       <Input
         label="Phone"
         name="phone"
         value={form.phone}
-        onChange={handleChange}
+        onChange={handleInputChange}
         required
       />
 
-      {/* Plan */}
       <div className="space-y-1">
         <label className="text-sm font-medium">Subscription Plan</label>
         <select
           name="plan"
           value={form.plan}
-          onChange={handleChange}
+          onChange={handleInputChange}
           className="w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-black"
         >
           {PLAN_OPTIONS.map((p) => (
@@ -164,51 +206,63 @@ export default function StudentForm({
         </select>
       </div>
 
-      {/* Shift Selection */}
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Shift</label>
-        <select
-          name="shiftName"
-          value={form.shiftName || ""}
-          onChange={handleChange}
-          required
-          className="w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-black"
-        >
-          <option value="">Select Shift</option>
-          {shifts?.map((shift) => (
-            <option key={shift.shiftName} value={shift.shiftName}>
-              {shift.shiftName}
-            </option>
-          ))}
-        </select>
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Shifts (Select one or more)</label>
+        {!allowMultiShift && (
+          <p className="text-xs text-amber-700">
+            Free plan: only one shift per student. Upgrade for multi-shift enrollment.
+          </p>
+        )}
+        {form.shiftNames.length > 0 && (
+          <p className="text-xs text-gray-500">
+            Selected: {form.shiftNames.join(", ")}
+          </p>
+        )}
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {shifts?.map((shift) => {
+            const checked = form.shiftNames.includes(shift.shiftName);
+            return (
+              <label
+                key={shift.shiftName}
+                className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+                  checked
+                    ? "border-black bg-gray-50"
+                    : "border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleShift(shift.shiftName)}
+                />
+                <span>{shift.shiftName}</span>
+              </label>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Seat Number */}
       <div>
         <Input
           label="Seat Number"
           name="seatNumber"
           type="number"
           value={form.seatNumber ?? ""}
-          onChange={handleChange}
+          onChange={handleInputChange}
           min={1}
         />
 
         {seatStatus === "checking" && (
-          <p className="text-sm text-gray-500 mt-1">
-            Checking availability...
-          </p>
+          <p className="mt-1 text-sm text-gray-500">Checking availability...</p>
         )}
-
         {seatStatus === "available" && (
-          <p className="text-sm text-green-600 mt-1">
-            Seat is available ✅
+          <p className="mt-1 text-sm text-green-600">
+            Seat is available for selected shifts.
           </p>
         )}
-
         {seatStatus === "not_available" && (
-          <p className="text-sm text-red-600 mt-1">
-            Seat is already booked ❌
+          <p className="mt-1 text-sm text-red-600">
+            Seat is already booked in an overlapping shift.
           </p>
         )}
       </div>
@@ -218,34 +272,66 @@ export default function StudentForm({
         name="startDate"
         type="date"
         value={form.startDate}
-        onChange={handleChange}
+        onChange={handleInputChange}
         required
       />
 
       <div className="grid grid-cols-2 gap-3">
         <Input
-          label="Fees Paid"
+          label="Initial Payment"
           name="feesPaid"
           type="number"
           value={form.feesPaid}
-          onChange={handleChange}
+          onChange={handleInputChange}
         />
-
         <Input
-          label="Pending Fees"
+          label="Opening Pending"
           name="pendingFees"
           type="number"
           value={form.pendingFees}
-          onChange={handleChange}
+          onChange={handleInputChange}
         />
       </div>
 
+      {showPaymentMeta && (
+        <>
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Payment Mode</label>
+            <select
+              name="paymentMode"
+              value={form.paymentMode || "CASH"}
+              onChange={handleInputChange}
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-black"
+            >
+              <option value="CASH">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="CARD">Card</option>
+              <option value="NETBANKING">Net Banking</option>
+            </select>
+          </div>
+
+          {(form.paymentMode === "UPI" ||
+            form.paymentMode === "CARD" ||
+            form.paymentMode === "NETBANKING") && (
+            <Input
+              label="Transaction ID (Optional)"
+              name="transactionId"
+              value={form.transactionId || ""}
+              onChange={handleInputChange}
+            />
+          )}
+
+          <Input
+            label="Payment Remarks (Optional)"
+            name="paymentRemarks"
+            value={form.paymentRemarks || ""}
+            onChange={handleInputChange}
+          />
+        </>
+      )}
+
       <div className="flex justify-end pt-2">
-        <Button
-          type="submit"
-          loading={loading}
-          disabled={seatStatus === "not_available"}
-        >
+        <Button type="submit" loading={loading} disabled={seatStatus === "not_available"}>
           Save Student
         </Button>
       </div>

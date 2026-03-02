@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import { Plus, Trash2 } from "lucide-react"
+import { maxShiftCountForPlan } from "@/lib/planLimits"
 
 interface ShiftInput {
   shiftName: string
-  totalSeats: number
   startTime?: string
   endTime?: string
 }
@@ -13,38 +13,41 @@ interface ShiftInput {
 interface Props {
   open: boolean
   organizationId: string
+  organizationPlan?: "FREE" | "PRO" | "ENTERPRISE" | string
   onSuccess: () => void
 }
 
 export default function OrganizationSetupModal({
   open,
   organizationId,
+  organizationPlan,
   onSuccess,
 }: Props) {
   const [totalSeats, setTotalSeats] = useState<number>(50)
   const [shifts, setShifts] = useState<ShiftInput[]>([
     {
       shiftName: "Shift 1",
-      totalSeats: 50,
       startTime: "",
       endTime: "",
     },
   ])
-  console.log("Organization ID in Modal:", organizationId)
-
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const maxShifts = maxShiftCountForPlan(organizationPlan)
 
   if (!open) return null
 
   /* ================= ADD SHIFT ================= */
 
   const addShift = () => {
+    if (shifts.length >= maxShifts) {
+      setError(`Current plan allows up to ${maxShifts} shifts. Upgrade to add more.`)
+      return
+    }
     setShifts(prev => [
       ...prev,
       {
         shiftName: `Shift ${prev.length + 1}`,
-        totalSeats: 0,
         startTime: "",
         endTime: "",
       },
@@ -62,7 +65,7 @@ export default function OrganizationSetupModal({
   const updateShift = (
     index: number,
     field: keyof ShiftInput,
-    value: string | number
+    value: string
   ) => {
     const updated = [...shifts]
     updated[index] = { ...updated[index], [field]: value }
@@ -73,16 +76,6 @@ export default function OrganizationSetupModal({
 
   const handleSubmit = async () => {
     setError("")
-
-    const totalShiftSeats = shifts.reduce(
-      (sum, shift) => sum + Number(shift.totalSeats),
-      0
-    )
-
-    if (totalShiftSeats > totalSeats) {
-      setError("Shift seats cannot exceed total seats")
-      return
-    }
 
     try {
       setLoading(true)
@@ -96,8 +89,6 @@ export default function OrganizationSetupModal({
           shifts,
         }),
       })
-      console.log("Setup Response:", res)
-
       const data = await res.json()
 
       if (!res.ok) {
@@ -105,8 +96,8 @@ export default function OrganizationSetupModal({
     }
     
     onSuccess()
-} catch (err: any) {
-    setError(err.message)
+} catch (err: unknown) {
+    setError(err instanceof Error ? err.message : "Setup failed")
     } finally {
       setLoading(false)
     }
@@ -178,19 +169,6 @@ export default function OrganizationSetupModal({
                   />
                 </div>
 
-                {/* SHIFT SEATS */}
-                <div>
-                  <label className="text-sm font-medium">Shift Seats</label>
-                  <input
-                    type="number"
-                    value={shift.totalSeats}
-                    onChange={e =>
-                      updateShift(index, "totalSeats", Number(e.target.value))
-                    }
-                    className="w-full mt-1 border rounded-lg px-3 py-2"
-                  />
-                </div>
-
                 {/* START TIME */}
                 <div>
                   <label className="text-sm font-medium">
@@ -229,11 +207,15 @@ export default function OrganizationSetupModal({
         {/* ADD SHIFT */}
         <button
           onClick={addShift}
-          className="mt-6 flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+          className="mt-6 flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={shifts.length >= maxShifts}
         >
           <Plus size={18} />
           Add Another Shift
         </button>
+        <p className="mt-1 text-xs text-gray-500">
+          Shift limit on current plan: {maxShifts}
+        </p>
 
         {/* ERROR */}
         {error && (

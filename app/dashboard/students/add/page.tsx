@@ -13,16 +13,17 @@ export default function AddStudentPage() {
   const router = useRouter();
   const { organization } = useAuth();
   const [saving, setSaving] = useState(false);
+  const allowMultiShift = organization?.plan !== "FREE";
 
   const shifts =
-    organization?.seatConfig?.shifts?.map((shift: any) => ({
+    organization?.seatConfig?.shifts?.map((shift) => ({
       shiftName: shift.shiftName,
       totalSeats: shift.totalSeats,
     })) || [];
 
   // ✅ Seat Availability Checker
   const checkSeatAvailability = async (
-    shiftName: string,
+    shiftNames: string[],
     seatNumber: number
   ) => {
     try {
@@ -30,8 +31,7 @@ export default function AddStudentPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          organizationId: organization?._id,
-          shiftName,
+          shiftNames,
           seatNumber,
         }),
       });
@@ -56,7 +56,6 @@ export default function AddStudentPage() {
         },
         body: JSON.stringify({
           ...formData,
-          organizationId: organization?._id,
         }),
       });
 
@@ -66,9 +65,13 @@ export default function AddStudentPage() {
         throw new Error(data.message);
       }
 
+      if (formData.feesPaid > 0 && !data.initialPaymentRecorded) {
+        throw new Error("Initial payment was not recorded.");
+      }
+
       router.push("/dashboard/students");
-    } catch (error) {
-      alert("Failed to create student");
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : "Failed to create student");
     } finally {
       setSaving(false);
     }
@@ -101,6 +104,8 @@ export default function AddStudentPage() {
             loading={saving}
             shifts={shifts}
             checkSeatAvailability={checkSeatAvailability}
+            showPaymentMeta
+            allowMultiShift={allowMultiShift}
           />
         </div>
       </div>

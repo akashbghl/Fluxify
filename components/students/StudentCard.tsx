@@ -1,8 +1,9 @@
 "use client";
 
-import { Calendar, Phone, Mail, Pencil, Trash, Clock, Armchair } from "lucide-react";
+import { Calendar, Phone, Mail, Pencil, Trash, Clock, Armchair, RefreshCw } from "lucide-react";
 import Button from "@/components/ui/Button";
 import clsx from "clsx";
+import { normalizeStudentShiftNames } from "@/lib/studentShift";
 
 export interface Student {
   _id: string;
@@ -10,7 +11,8 @@ export interface Student {
   email?: string;
   phone: string;
   plan: string;
-  shiftName: string;
+  shiftName?: string;
+  shiftNames?: string[];
   seatNumber: number;
   expiryDate: string;
   status: "ACTIVE" | "EXPIRED";
@@ -20,33 +22,21 @@ interface StudentCardProps {
   student: Student;
   onEdit?: (student: Student) => void;
   onDelete?: (id: string) => void;
+  onRenew?: (student: Student) => void;
 }
 
-export default function StudentCard({
-  student,
-  onEdit,
-  onDelete,
-}: StudentCardProps) {
-
+export default function StudentCard({ student, onEdit, onDelete, onRenew }: StudentCardProps) {
   const expiry = new Date(student.expiryDate);
-
-  const daysLeft = Math.ceil(
-    (expiry.getTime() - Date.now()) /
-      (1000 * 60 * 60 * 24)
-  );
-
-  // ✅ derive status safely (do NOT mutate props)
-  const computedStatus =
-    daysLeft < 0 ? "EXPIRED" : student.status;
+  const computedStatus = student.status;
+  const shiftNames = normalizeStudentShiftNames({
+    shiftName: student.shiftName,
+    shiftNames: student.shiftNames,
+  });
 
   return (
     <div className="rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md">
-
-      {/* Header */}
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">
-          {student.name}
-        </h3>
+        <h3 className="text-sm font-semibold">{student.name}</h3>
 
         <span
           className={clsx(
@@ -60,9 +50,7 @@ export default function StudentCard({
         </span>
       </div>
 
-      {/* Info */}
       <div className="space-y-2 text-xs text-gray-600">
-
         {student.email && (
           <div className="flex items-center gap-2">
             <Mail size={14} />
@@ -75,48 +63,37 @@ export default function StudentCard({
           <span>{student.phone}</span>
         </div>
 
-        {/* Shift */}
         <div className="flex items-center gap-2">
           <Clock size={14} />
-          <span>Shift: {student.shiftName}</span>
+          <span>Shifts: {shiftNames.join(", ") || "N/A"}</span>
         </div>
 
-        {/* Seat */}
         <div className="flex items-center gap-2">
           <Armchair size={14} />
           <span>Seat: {student.seatNumber}</span>
         </div>
 
-        {/* Expiry */}
         <div className="flex items-center gap-2">
           <Calendar size={14} />
           <span>
-            Expires on{" "}
-            {expiry.toLocaleDateString()} (
-            {daysLeft >= 0
-              ? `${daysLeft} days left`
-              : "Expired"}
-            )
+            Expires on {expiry.toLocaleDateString()} (
+            {computedStatus === "ACTIVE" ? "Active" : "Expired"})
           </span>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="mt-4 flex gap-2">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={() => onEdit?.(student)}
-        >
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <Button variant="outline" className="flex-1" onClick={() => onEdit?.(student)}>
           <Pencil size={14} className="mr-1" />
           Edit
         </Button>
 
-        <Button
-          variant="danger"
-          className="flex-1"
-          onClick={() => onDelete?.(student._id)}
-        >
+        <Button variant="outline" className="flex-1" onClick={() => onRenew?.(student)}>
+          <RefreshCw size={14} className="mr-1" />
+          Renew
+        </Button>
+
+        <Button variant="danger" className="flex-1" onClick={() => onDelete?.(student._id)}>
           <Trash size={14} className="mr-1" />
           Delete
         </Button>
