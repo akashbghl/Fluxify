@@ -1,0 +1,345 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import {
+  ArrowRight,
+  Shield,
+  Bell,
+  BarChart3,
+  Users,
+  CreditCard,
+  Clock,
+} from "lucide-react";
+import { useState } from "react";
+import { StickyBanner } from "@/components/layout/StickyBanner";
+import FloatingLines from "@/components/FloatingLines";
+import Mnavbar from "@/components/Mnavbar";
+import {
+  Badge,
+  FAQItem,
+  FeatureCard,
+  PrimaryButton,
+  SecondaryButton,
+  SectionHeader,
+  Stat,
+} from "@/components/ReusableComponentsFunctions";
+import BlurredCircle from "@/components/ui/BlurredCircle";
+import Pricing from "@/components/landingComponents/Pricing";
+import { ToastContainer } from "react-toastify";
+import { useAuth } from "@/hooks/useAuth";
+
+export default function HomePageClient() {
+  const router = useRouter();
+  const [visible, setVisible] = useState(true);
+  const { user } = useAuth();
+
+  return (
+    <div className="relative min-h-screen bg-black text-gray-900">
+      <ToastContainer />
+      {visible && (
+        <StickyBanner
+          isVisible={visible}
+          onClose={() => setVisible(false)}
+          className="bg-gradient-to-r from-black/99 via-violet-950 to-black/99 text-sm text-white"
+        >
+          Flat 50% OFF - Use code <b className="mx-2">FLUX50</b> today!
+        </StickyBanner>
+      )}
+
+      <section className="relative bg-black sm:min-h-screen">
+        <div className="absolute inset-0 z-0">
+          <FloatingLines
+            enabledWaves={["top", "middle", "bottom"]}
+            lineCount={5}
+            lineDistance={5}
+            bendRadius={5}
+            bendStrength={-0.7}
+            interactive={true}
+            parallax={true}
+          />
+        </div>
+        <div className="relative z-20">
+          <Mnavbar />
+        </div>
+        <div className="pointer-events-none relative z-10 mx-auto max-w-7xl px-6 py-12 text-center sm:py-28">
+          <Badge>All-in-one Library Management Platform</Badge>
+
+          <h1 className="pointer-events-auto mt-6 text-4xl font-sans font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
+            Manage Your Library
+            <span className="block text-white">Smarter, Faster, Better</span>
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-2xl text-lg font-cambria text-gray-300">
+            Automate student management, fee tracking, attendance, reminders and analytics - all
+            in one modern dashboard.
+          </p>
+
+          <div className="pointer-events-auto mt-10 flex flex-wrap justify-center gap-4">
+            <PrimaryButton
+              onClick={() => {
+                if (!user) {
+                  router.push("/register");
+                } else {
+                  router.push("/dashboard");
+                }
+              }}
+            >
+              Start Free Trial <ArrowRight size={16} />
+            </PrimaryButton>
+
+            <SecondaryButton onClick={() => router.push("/login")}>View Demo</SecondaryButton>
+          </div>
+
+          <div className="relative mt-16 overflow-hidden rounded-xl border border-gray-100/20 shadow-xl">
+            <div className="max-md:h-60 flex h-90 w-full items-center justify-center rounded-xl bg-linear-to-b from-gray-200/10 to-gray-100/10 text-gray-300">
+              Dashboard Preview Placeholder
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="text-white">
+        <BlurredCircle classname="-left-20 top-0" />
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-6 py-16 sm:grid-cols-4">
+          <Stat value={5000} label="Active Students" />
+          <Stat value={120} label="Libraries" />
+          <Stat value={99.9} label="Uptime" />
+          <Stat value={24} label="Support" />
+        </div>
+      </section>
+
+      <section id="features" className="py-24">
+        <BlurredCircle classname="left-auto top-70" />
+        <SectionHeader
+          title="Powerful Features"
+          subtitle="Everything you need to run your library efficiently."
+        />
+
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 sm:grid-cols-2 lg:grid-cols-3">
+          <FeatureCard
+            icon={<Shield />}
+            title="Secure Authentication"
+            desc="Role-based access control with encrypted sessions and middleware protection."
+          />
+
+          <FeatureCard
+            icon={<Bell />}
+            title="Smart Notifications"
+            desc="Automatic reminders for subscription expiry and pending payments."
+          />
+
+          <FeatureCard
+            icon={<BarChart3 />}
+            title="Analytics Dashboard"
+            desc="Track revenue, attendance and business growth in real time."
+          />
+
+          <FeatureCard
+            icon={<Users />}
+            title="Student Management"
+            desc="Create, update and manage students effortlessly."
+          />
+
+          <FeatureCard
+            icon={<CreditCard />}
+            title="Payment Tracking"
+            desc="Record payments, generate reports and export CSV."
+          />
+
+          <FeatureCard
+            icon={<Clock />}
+            title="Attendance Monitoring"
+            desc="Track daily attendance with check-in and check-out."
+          />
+        </div>
+      </section>
+
+      <section id="how" className="border-t border-gray-600/30 pt-16 text-white">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-4xl font-bold tracking-tight sm:text-4xl">How It Works</h2>
+            <p className="mt-4 text-lg text-gray-400">
+              Launch your digital library system in three simple steps. No technical expertise
+              required.
+            </p>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 divide-y divide-gray-700/30 border border-gray-700/30 md:grid-cols-3 md:divide-x md:divide-y-0">
+            <div className="p-10">
+              <div className="text-sm font-semibold text-violet-400">STEP 01</div>
+              <h3 className="mt-4 text-2xl font-semibold">Create Your Account</h3>
+              <p className="mt-4 text-sm leading-relaxed text-gray-400">
+                Sign up in seconds and set up your institution profile. Customize library rules,
+                working hours, and categories to match your workflow.
+              </p>
+            </div>
+
+            <div className="p-10">
+              <div className="text-sm font-semibold text-violet-400">STEP 02</div>
+              <h3 className="mt-4 text-2xl font-semibold">Add Students and Books</h3>
+              <p className="mt-4 text-sm leading-relaxed text-gray-400">
+                Import students, register books, and configure subscriptions. Everything is
+                centralized in a clean and intuitive dashboard.
+              </p>
+            </div>
+
+            <div className="p-10">
+              <div className="text-sm font-semibold text-violet-400">STEP 03</div>
+              <h3 className="mt-4 text-2xl font-semibold">Track, Automate and Grow</h3>
+              <p className="mt-4 text-sm leading-relaxed text-gray-400">
+                Monitor borrowing activity, automate reminders, manage fines, and gain insights
+                through advanced analytics to scale efficiently.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 text-white">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Loved by Managers</h2>
+            <p className="mt-2 text-sm text-gray-400">
+              Trusted by growing institutions to simplify operations and scale efficiently.
+            </p>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 divide-y divide-gray-700/30 border border-gray-700/30 md:grid-cols-3 md:divide-x md:divide-y-0">
+            <div className="p-10">
+              <div className="text-sm text-gray-500">Library Owner</div>
+              <h3 className="mt-2 text-xl font-semibold">Amit Sharma</h3>
+
+              <p className="mt-6 text-sm leading-relaxed text-gray-400">
+                &quot;Fluxify reduced my administrative workload by nearly 70%. Student management,
+                reminders, and fine tracking are fully automated. It feels like having an extra
+                staff member.&quot;
+              </p>
+
+              <div className="mt-6 text-xs text-gray-600">Managing 1,200+ students</div>
+            </div>
+
+            <div className="p-10">
+              <div className="text-sm text-gray-500">Library Manager</div>
+              <h3 className="mt-2 text-xl font-semibold">Neha Gupta</h3>
+
+              <p className="mt-6 text-sm leading-relaxed text-gray-400">
+                &quot;The analytics dashboard gives me real-time visibility into borrowing trends and
+                overdue patterns. Decision-making is faster and more data-driven.&quot;
+              </p>
+
+              <div className="mt-6 text-xs text-gray-600">3 Branch Locations</div>
+            </div>
+
+            <div className="p-10">
+              <div className="text-sm text-gray-500">Founder</div>
+              <h3 className="mt-2 text-xl font-semibold">Rahul Verma</h3>
+
+              <p className="mt-6 text-sm leading-relaxed text-gray-400">
+                &quot;Clean interface, lightning-fast performance, and outstanding customer support.
+                Implementation was seamless across our entire institution.&quot;
+              </p>
+
+              <div className="mt-6 text-xs text-gray-600">5,000+ active members</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Pricing />
+
+      <section id="faq" className="py-24">
+        <BlurredCircle classname="left-auto top-50" />
+        <SectionHeader
+          title="Frequently Asked Questions"
+          subtitle="Everything you need to know about using Fluxify."
+        />
+
+        <div className="mx-auto max-w-4xl space-y-0.5 px-6">
+          <FAQItem
+            q="How secure is my library data?"
+            a="Security is a top priority at Fluxify. We use secure authentication mechanisms, encrypted cookies, and protected database access to ensure your library records, member data, and transaction history remain safe and confidential."
+          />
+
+          <FAQItem
+            q="Can I export reports and library data?"
+            a="Yes. Fluxify allows you to export detailed reports in CSV format at any time. This includes circulation records, member activity, overdue summaries, and inventory data making audits and administrative reviews simple and efficient."
+          />
+
+          <FAQItem
+            q="What kind of support do you provide?"
+            a="We provide responsive support via Email and WhatsApp to assist with onboarding, troubleshooting, and general inquiries. Our goal is to ensure your library operations run smoothly without interruptions."
+          />
+
+          <FAQItem
+            q="Is Fluxify suitable for schools and colleges?"
+            a="Absolutely. Fluxify is designed for schools, colleges, universities, and private institutions. Whether you manage a small academic library or a large collection, the system scales to meet your operational needs."
+          />
+
+          <FAQItem
+            q="Can multiple librarians use the system at the same time?"
+            a="Yes. Fluxify supports multi-user access with role-based permissions. Administrators can assign different access levels to librarians and staff to maintain operational control and accountability."
+          />
+        </div>
+      </section>
+
+      <section className="relative m-auto mb-4 overflow-hidden rounded-xl border border-gray-300/20 bg-gray-700/10 py-4 text-white max-md:mx-4 sm:mx-28">
+        <div className="relative mx-auto max-w-5xl px-6 text-center">
+          <span className="inline-block rounded-full bg-white/10 px-4 py-1 text-sm text-gray-300 backdrop-blur">
+            Trusted by 10,000+ readers
+          </span>
+
+          <h2 className="mt-4 text-2xl font-bold leading-tight sm:text-5xl">
+            Transform the way you manage your library
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-2xl text-sm text-gray-400">
+            Organize books, track borrowers, and gain powerful insights - all in one modern,
+            easy-to-use platform built for growing libraries.
+          </p>
+
+          <div className="mt-5 flex flex-wrap justify-center gap-6 text-sm text-gray-400">
+            <div className="flex items-center gap-2">
+              <span className="text-green-400">✓</span> No credit card required
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-green-400">✓</span> Setup in under 5 minutes
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-green-400">✓</span> Cancel anytime
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col justify-center gap-4 sm:flex-row">
+            <button
+              onClick={() => {
+                if (!user) {
+                  router.push("/register");
+                } else {
+                  router.push("/dashboard");
+                }
+              }}
+              className="cursor-pointer rounded-xl bg-gradient-to-r from-violet-500 to-pink-500 px-8 py-4 text-sm font-semibold text-white shadow-lg transition hover:scale-105 hover:shadow-xl"
+            >
+              Start Free Trial
+            </button>
+
+            <button
+              onClick={() => router.push("/demo")}
+              className="rounded-xl border border-white/20 px-8 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
+            >
+              Book a Demo
+            </button>
+          </div>
+
+          <p className="mt-8 text-xs text-gray-500">
+            14-day free trial - No hidden fees - Secure and encrypted
+          </p>
+        </div>
+      </section>
+
+      <footer className="border-t border-gray-300/20 py-10 text-center text-sm text-gray-500">
+        © {new Date().getFullYear()} Fluxify | All rights reserved.
+      </footer>
+    </div>
+  );
+}

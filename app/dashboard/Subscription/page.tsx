@@ -6,9 +6,34 @@ import { toast } from 'react-toastify';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import BlurredCircle from '@/components/ui/BlurredCircle';
 
+interface RazorpayOptions {
+    key?: string;
+    amount: number;
+    currency: string;
+    name: string;
+    description: string;
+    order_id: string;
+    handler: () => void;
+    prefill?: {
+        email?: string;
+    };
+    modal?: {
+        ondismiss?: () => void;
+    };
+    theme?: {
+        color?: string;
+    };
+}
+
+declare global {
+    interface Window {
+        Razorpay?: new (opts: RazorpayOptions) => { open: () => void };
+    }
+}
+
 const Page = () => {
     const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
-    const { user, refreshUser } = useAuth();
+    const { user } = useAuth();
     const router = useRouter();
 
     const loadRazorpayScript = () => {
@@ -45,7 +70,7 @@ const Page = () => {
 
             const order = await response.json();
 
-            const options = {
+            const options: RazorpayOptions = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
                 amount: order.amount,
                 currency: order.currency,
@@ -68,9 +93,11 @@ const Page = () => {
                 },
             };
 
-            const RazorpayCtor = (window as Window & {
-                Razorpay: new (opts: unknown) => { open: () => void };
-            }).Razorpay;
+            const RazorpayCtor = window.Razorpay;
+            if (!RazorpayCtor) {
+                toast.error("Payment gateway is unavailable.");
+                return;
+            }
             const razorpay = new RazorpayCtor(options);
             razorpay.open();
         } catch (error) {
