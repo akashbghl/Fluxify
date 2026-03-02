@@ -190,16 +190,25 @@ export function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 
-export function Stat({ value, label }: { value: number; label: string }) {
+export function Stat({
+  value,
+  label,
+  suffix = "+",
+}: {
+  value: number;
+  label: string;
+  suffix?: string;
+}) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
     let start = 0;
     const duration = 1200;
-    const step = Math.ceil(value / (duration / 16));
+    const increment = value / (duration / 16);
 
     const timer = setInterval(() => {
-      start += step;
+      start += increment;
+
       if (start >= value) {
         setCount(value);
         clearInterval(timer);
@@ -211,9 +220,17 @@ export function Stat({ value, label }: { value: number; label: string }) {
     return () => clearInterval(timer);
   }, [value]);
 
+  const formattedNumber =
+    value % 1 !== 0
+      ? count.toFixed(1)
+      : Math.floor(count).toLocaleString();
+
   return (
     <div className="text-center">
-      <p className="text-3xl font-bold">{count}+</p>
+      <p className="text-3xl font-bold">
+        {formattedNumber}
+        {suffix}
+      </p>
       <p className="text-sm text-gray-500">{label}</p>
     </div>
   );

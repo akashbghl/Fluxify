@@ -103,12 +103,12 @@ export default function HomePageClient() {
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-6 py-16 sm:grid-cols-4">
           <Stat value={5000} label="Active Students" />
           <Stat value={120} label="Libraries" />
-          <Stat value={99.9} label="Uptime" />
-          <Stat value={24} label="Support" />
+          <Stat value={99.9} label="Uptime" suffix="%" />
+          <Stat value={24} label="Support" suffix="/7" />
         </div>
       </section>
 
-      <section id="features" className="py-24">
+      <section id="features" className="pb-24 pt-12">
         <BlurredCircle classname="left-auto top-70" />
         <SectionHeader
           title="Powerful Features"
