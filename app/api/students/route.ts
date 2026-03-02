@@ -3,7 +3,12 @@ import { connectDB } from "@/lib/db";
 import Student from "@/models/Student";
 import Payment from "@/models/Payment";
 import { requireAuth } from "@/lib/requireAuth";
-import { validate, studentCreateSchema, studentUpdateSchema } from "@/lib/validators";
+import {
+  validate,
+  studentCreateSchema,
+  studentRenewSchema,
+  studentUpdateSchema,
+} from "@/lib/validators";
 import Organization from "@/models/Organization";
 import { getOverlappingShiftNames } from "@/lib/shiftOverlap";
 import { getPrimaryShiftName, normalizeStudentShiftNames } from "@/lib/studentShift";
@@ -387,5 +392,80 @@ export async function DELETE(req: NextRequest) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json({ success: false, message }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    await connectDB();
+    const auth = await requireAuth();
+    const organizationId = auth.organizationId;
+
+    const body = await req.json();
+    const data = validate(studentRenewSchema, body);
+
+    const student = await Student.findOne({
+      _id: data.id,
+      organizationId,
+    });
+
+    if (!student) {
+      return NextResponse.json(
+        { success: false, message: "Student not found" },
+        { status: 404 }
+      );
+    }
+
+    const plan = data.plan || student.plan;
+    const planMonths = PLAN_MAP[plan];
+    if (!planMonths) {
+      return NextResponse.json(
+        { success: false, message: "Invalid renewal plan" },
+        { status: 400 }
+      );
+    }
+
+    const now = new Date();
+    const renewalStartBase =
+      student.expiryDate && new Date(student.expiryDate) > now
+        ? new Date(student.expiryDate)
+        : now;
+    const nextExpiry = new Date(renewalStartBase);
+    nextExpiry.setMonth(nextExpiry.getMonth() + planMonths);
+
+    student.plan = plan;
+    student.startDate = now;
+    student.expiryDate = nextExpiry;
+    student.status = "ACTIVE";
+
+    const amountPaid = Number(data.amountPaid || 0);
+    if (amountPaid > 0) {
+      student.feesPaid += amountPaid;
+      if (student.pendingFees > 0) {
+        student.pendingFees = Math.max(student.pendingFees - amountPaid, 0);
+      }
+
+      await Payment.create({
+        student: student._id,
+        organizationId,
+        amount: amountPaid,
+        mode: data.paymentMode || "CASH",
+        transactionId: data.transactionId || undefined,
+        remarks: data.remarks || "Student renewal payment",
+        status: "SUCCESS",
+      });
+    }
+
+    await student.save();
+
+    return NextResponse.json({
+      success: true,
+      message: "Student renewed successfully",
+      student,
+      paymentRecorded: amountPaid > 0,
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to renew student";
+    return NextResponse.json({ success: false, message }, { status: 400 });
   }
 }

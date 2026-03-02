@@ -39,6 +39,15 @@ export const studentCreateSchema = z.object({
 
 export const studentUpdateSchema = studentCreateSchema.partial();
 
+export const studentRenewSchema = z.object({
+  id: z.string().min(1),
+  plan: z.enum(["1_MONTH", "3_MONTH", "6_MONTH", "12_MONTH"]).optional(),
+  amountPaid: z.coerce.number().min(0).default(0),
+  paymentMode: z.enum(["CASH", "UPI", "CARD", "NETBANKING"]).optional(),
+  transactionId: z.string().optional(),
+  remarks: z.string().optional(),
+});
+
 /* ============================
    PAYMENT VALIDATIONS
 ============================ */

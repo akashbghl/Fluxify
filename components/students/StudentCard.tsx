@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Phone, Mail, Pencil, Trash, Clock, Armchair } from "lucide-react";
+import { Calendar, Phone, Mail, Pencil, Trash, Clock, Armchair, RefreshCw } from "lucide-react";
 import Button from "@/components/ui/Button";
 import clsx from "clsx";
 import { normalizeStudentShiftNames } from "@/lib/studentShift";
@@ -22,9 +22,10 @@ interface StudentCardProps {
   student: Student;
   onEdit?: (student: Student) => void;
   onDelete?: (id: string) => void;
+  onRenew?: (student: Student) => void;
 }
 
-export default function StudentCard({ student, onEdit, onDelete }: StudentCardProps) {
+export default function StudentCard({ student, onEdit, onDelete, onRenew }: StudentCardProps) {
   const expiry = new Date(student.expiryDate);
   const computedStatus = student.status;
   const shiftNames = normalizeStudentShiftNames({
@@ -81,10 +82,15 @@ export default function StudentCard({ student, onEdit, onDelete }: StudentCardPr
         </div>
       </div>
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
         <Button variant="outline" className="flex-1" onClick={() => onEdit?.(student)}>
           <Pencil size={14} className="mr-1" />
           Edit
+        </Button>
+
+        <Button variant="outline" className="flex-1" onClick={() => onRenew?.(student)}>
+          <RefreshCw size={14} className="mr-1" />
+          Renew
         </Button>
 
         <Button variant="danger" className="flex-1" onClick={() => onDelete?.(student._id)}>
