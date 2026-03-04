@@ -97,9 +97,8 @@ export default function HomePageClient() {
                 <span className="block text-teal-300">Library and Seat Based Study Centers</span>
               </h1>
               <p className="mt-5 max-w-xl text-sm leading-6 text-slate-600 sm:text-base dark:text-slate-300">
-                Fluxify is designed around your real daily motions, admissions, renewals,
-                attendance, collection, and seat control. It feels like software built by someone
-                who has actually managed the desk.
+                Fluxify is designed for libraries and study centers to manage seats, memberships, and daily operations digitally.
+                It simplifies administration with automated access, payments, and real-time management in one platform.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <button
@@ -257,10 +256,10 @@ export default function HomePageClient() {
 
         <section className="mt-12 rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-slate-100 px-6 py-10 text-center sm:px-10 dark:border-white/10 dark:from-[#0b101b] dark:to-[#101b2d]">
           <p className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-700 dark:border-white/20 dark:bg-white/5 dark:text-slate-300">
-            <Sparkles size={13} /> Ready to modernize your desk operations?
+            Ready to digitalize your Library operations?
           </p>
           <h3 className="mx-auto mt-4 max-w-3xl text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">
-            Upgrade from spreadsheet chaos to a system your team actually enjoys using
+            Start your free trial and experience the difference today.
           </h3>
           <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
             Start free, set up in minutes, and scale with confidence as your student base grows.
@@ -281,10 +280,67 @@ export default function HomePageClient() {
           </div>
         </section>
 
-        <footer className="mt-10 border-t border-slate-200 py-6 text-center text-sm text-slate-500 dark:border-white/10">
-          Copyright {new Date().getFullYear()} Fluxify. All rights reserved.
-        </footer>
       </div>
+      <footer className="mt-16 mx-10 border-t rounded-tl-3xl rounded-tr-3xl border-slate-200 bg-white dark:border-white/10 dark:bg-[#06070b]">
+        <div className="mx-auto max-w-[1240px] px-6 py-12 sm:px-10">
+          <div className="grid gap-10 grid-cols-2">
+
+            {/* Brand Section */}
+            <div>
+              <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Fluxify
+              </h4>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+                The operating system for modern library and seat-based study centers.
+                Built to simplify admissions, attendance, renewals, and operations.
+              </p>
+
+              <p className="mt-4 text-xs text-slate-500 dark:text-slate-500">
+                Built in public by{" "}
+                <a
+                  href="https://github.com/akashbghl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-teal-500 hover:underline"
+                >
+                  @akashbghl
+                </a>
+              </p>
+            </div>
+            <div className="flex ml-auto gap-4">
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-400">
+                Connect:
+              </p>
+              <ul className="flex space-x-4 text-sm text-slate-600 dark:text-slate-400">
+                {[
+                  { label: "Github", href: "https://github.com/akashbghl" },
+                  { label: "Linkedin", href: "https://www.linkedin.com/in/akash-baghel-68921a281/" },
+                  { label: "Twitter/X", href: "https://x.com/akashbghl" },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <a
+                      href={item.href}
+                      className="hover:text-slate-900 dark:hover:text-white transition"
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 text-xs text-slate-500 dark:border-white/10 sm:flex-row">
+            <p>
+              © {new Date().getFullYear()} Fluxify. All rights reserved.
+            </p>
+            <p>
+              Designed for high-efficiency study center operations.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

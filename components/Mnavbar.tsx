@@ -78,17 +78,17 @@ const Mnavbar = () => {
           {loggedIn ? (
             <PrimaryButton onClick={() => router.push("/dashboard")}>Go to Dashboard</PrimaryButton>
           ) : (
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               <button
                 onClick={() => router.push("/login")}
-                className="cursor-pointer rounded-md px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900 dark:text-white dark:hover:bg-white/10 dark:hover:text-white"
+                className="cursor-pointer rounded-md px-4 py-2 text-sm font-medium text-slate-700 max-md:bg-teal-400/20 transition hover:bg-slate-100 hover:text-slate-900 dark:text-white dark:hover:bg-white/10 dark:hover:text-white"
               >
-                Login
+                Sign in
               </button>
 
               <button
                 onClick={() => router.push("/register")}
-                className="cursor-pointer rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+                className="hidden md:flex cursor-pointer rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
               >
                 Get Started
               </button>
