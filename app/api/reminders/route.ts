@@ -4,6 +4,7 @@ import Student from "@/models/Student";
 import { sendMail } from "@/lib/mail";
 import { sendWhatsAppMessage } from "@/lib/whatsapp";
 import Subscription from "@/models/Subscription";
+import Organization from "@/models/Organization";
 
 /* ======================================================
     Utils
@@ -22,6 +23,7 @@ function getDaysDiff(date: Date) {
 
 // send reminder to student
 async function notifyStudent(student: any, daysLeft: number) {
+  const organization = await Organization.findById(student.organization);
   const expiryDate = new Date(
     student.expiryDate
   ).toDateString();
@@ -40,7 +42,7 @@ Please renew your subscription to continue uninterrupted access.
 
 If you’ve already renewed, kindly ignore this message.
 
-– NextStep Team`
+– ${organization.name || "Fluxify Team"}`
       : `Hello ${student.name} 👋
 
 Your library subscription expired on ${expiryDate}.
@@ -49,7 +51,7 @@ Please renew as soon as possible to avoid service interruption.
 
 If you’ve already renewed, kindly ignore this message.
 
-– NextStep Team`;
+– ${organization.name || "Fluxify Team"}`;
 
   const emailHtml = `
   <div style="font-family: Arial, sans-serif; line-height:1.6; color:#333;">
@@ -86,7 +88,7 @@ If you’ve already renewed, kindly ignore this message.
 
     <p>
       Regards,<br/>
-      <strong>NextStep Library</strong>
+      <strong>${organization.name || "Fluxify Team"}</strong>
     </p>
   </div>
   `;
