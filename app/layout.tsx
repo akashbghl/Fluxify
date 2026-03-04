@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://fluxifyio.vercel.app"),
   title: {
     default: "Fluxify | Library Management Software",
     template: "%s | Fluxify",
@@ -23,6 +23,10 @@ export const metadata: Metadata = {
     "Fluxify helps libraries manage students, seats, shifts, attendance, payments, reminders, and analytics from one dashboard.",
   applicationName: "Fluxify",
   keywords: [
+    "Fluxify",
+    "Fluxifyio",
+    "Fluxify Library Management Software",
+    "Akash Baghel",
     "library management software",
     "student seat management",
     "attendance tracking",

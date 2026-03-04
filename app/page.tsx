@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import HomePageClient from "@/components/landing/HomePageClient";
 
 export const metadata: Metadata = {
-  title: "Library Management Software for Students, Seats, Attendance and Payments",
+  title: "Fluxify | Library Management Platform",
   description:
     "Fluxify is a modern library management platform to handle student enrollments, seat and shift allocations, attendance, fee tracking, reminders, and reports.",
   alternates: {
@@ -17,7 +17,7 @@ const organizationStructuredData = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   description:
-    "Library management software for seat allocation, student management, attendance tracking, payments, and reminders.",
+    "Fluxify is a modern library management platform to handle student enrollments, seat and shift allocations, attendance, fee tracking, reminders, and reports.",
   offers: {
     "@type": "Offer",
     price: "0",

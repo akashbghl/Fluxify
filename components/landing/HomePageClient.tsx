@@ -3,342 +3,343 @@
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
-  Shield,
-  Bell,
-  BarChart3,
-  Users,
+  BellRing,
+  Blocks,
+  CalendarRange,
+  ChartColumn,
+  Check,
+  CircleAlert,
+  Clock3,
   CreditCard,
-  Clock,
+  Layers2,
+  LockKeyhole,
+  Radar,
+  Rows3,
+  ScanLine,
+  Sparkles,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
-import { StickyBanner } from "@/components/layout/StickyBanner";
-import FloatingLines from "@/components/FloatingLines";
-import Mnavbar from "@/components/Mnavbar";
-import {
-  Badge,
-  FAQItem,
-  FeatureCard,
-  PrimaryButton,
-  SecondaryButton,
-  SectionHeader,
-  Stat,
-} from "@/components/ReusableComponentsFunctions";
-import BlurredCircle from "@/components/ui/BlurredCircle";
-import Pricing from "@/components/landingComponents/Pricing";
 import { ToastContainer } from "react-toastify";
 import { useAuth } from "@/hooks/useAuth";
+import Mnavbar from "@/components/Mnavbar";
+import Pricing from "@/components/landingComponents/Pricing";
+
+const modules = [
+  {
+    icon: <Rows3 size={16} />,
+    title: "Admission Desk",
+    detail: "Enroll students, assign seat + shift, and collect opening payment in one flow.",
+  },
+  {
+    icon: <Layers2 size={16} />,
+    title: "Shift Collision Guard",
+    detail: "Overlap-aware logic blocks conflicting seat usage across timing windows.",
+  },
+  {
+    icon: <Clock3 size={16} />,
+    title: "Attendance Timeline",
+    detail: "Live check-in/check-out stream with searchable daily records.",
+  },
+  {
+    icon: <CreditCard size={16} />,
+    title: "Manager Ledger",
+    detail: "Manual payment entries with remarks, mode, transaction, and pending fee impact.",
+  },
+  {
+    icon: <BellRing size={16} />,
+    title: "Ops Notification Hub",
+    detail: "One feed for expiry alerts, payments, attendance, and subscription state.",
+  },
+  {
+    icon: <ChartColumn size={16} />,
+    title: "Performance Radar",
+    detail: "Spot expiring students, occupancy pressure, and collection trends early.",
+  },
+];
+
+const proof = [
+  { label: "Seat conflicts reduced", value: "92%" },
+  { label: "Desk workflow speedup", value: "3.4x" },
+  { label: "Average onboarding", value: "18 min" },
+  { label: "Ops visibility", value: "Real-time" },
+];
 
 export default function HomePageClient() {
   const router = useRouter();
-  const [visible, setVisible] = useState(true);
   const { user } = useAuth();
+  const [active, setActive] = useState(0);
+
+  const goPrimary = () => {
+    if (!user) {
+      router.push("/register");
+      return;
+    }
+    router.push("/dashboard");
+  };
 
   return (
-    <div className="relative min-h-screen bg-black text-gray-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#06070b] dark:text-slate-100">
       <ToastContainer />
-      {visible && (
-        <StickyBanner
-          isVisible={visible}
-          onClose={() => setVisible(false)}
-          className="bg-gradient-to-r from-black/99 via-violet-950 to-black/99 text-sm text-white"
-        >
-          Flat 50% OFF - Use code <b className="mx-2">FLUX50</b> today!
-        </StickyBanner>
-      )}
+      <div className="mx-auto max-w-[1240px] px-4 pb-10 pt-2 sm:px-6 lg:px-8">
+        <Mnavbar />
 
-      <section className="relative bg-black sm:min-h-screen">
-        <div className="absolute inset-0 z-0">
-          <FloatingLines
-            enabledWaves={["top", "middle", "bottom"]}
-            lineCount={5}
-            lineDistance={5}
-            bendRadius={5}
-            bendStrength={-0.7}
-            interactive={true}
-            parallax={true}
-          />
-        </div>
-        <div className="relative z-20">
-          <Mnavbar />
-        </div>
-        <div className="pointer-events-none relative z-10 mx-auto max-w-7xl px-6 py-12 text-center sm:py-28">
-          <Badge>All-in-one Library Management Platform</Badge>
+        <section className="relative mt-4 overflow-hidden rounded-[28px] border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0b0f18]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_12%,rgba(45,212,191,0.12),transparent_30%),radial-gradient(circle_at_10%_90%,rgba(34,197,94,0.1),transparent_30%),linear-gradient(140deg,#ffffff_35%,#f1f5f9_100%)] dark:bg-[radial-gradient(circle_at_85%_12%,rgba(45,212,191,0.22),transparent_30%),radial-gradient(circle_at_10%_90%,rgba(34,197,94,0.16),transparent_30%),linear-gradient(140deg,#0b0f18_35%,#0f172a_100%)]" />
+          <div className="relative grid gap-8 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <p className="inline-flex items-center gap-2 rounded-full border border-teal-300/40 bg-teal-100 px-3 py-1 text-xs tracking-wide text-teal-700 dark:border-teal-200/20 dark:bg-teal-300/10 dark:text-teal-200">
+                <Sparkles size={13} />
+                Fluxify is for Smart Management
+              </p>
+              <h1 className="mt-5 max-w-2xl text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl lg:text-6xl dark:text-white">
+                The Operating System for
+                <span className="block text-teal-300">Library and Seat Based Study Centers</span>
+              </h1>
+              <p className="mt-5 max-w-xl text-sm leading-6 text-slate-600 sm:text-base dark:text-slate-300">
+                Fluxify is designed for libraries and study centers to manage seats, memberships, and daily operations digitally.
+                It simplifies administration with automated access, payments, and real-time management in one platform.
+              </p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <button
+                  onClick={goPrimary}
+                  className="inline-flex items-center gap-2 rounded-xl bg-teal-400 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-teal-300"
+                >
+                  Start Free Trial <ArrowRight size={15} />
+                </button>
+                <button
+                  onClick={() => router.push("/login")}
+                  className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                >
+                  Explore Dashboard
+                </button>
+              </div>
+              <div className="mt-7 grid max-w-xl grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-300">
+                <div className="rounded-xl border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-black/20">
+                  <p className="font-medium text-slate-900 dark:text-white">No payment gateway dependency</p>
+                  <p className="mt-1 text-slate-500 dark:text-slate-400">Manager-controlled finance workflow</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-black/20">
+                  <p className="font-medium text-slate-900 dark:text-white">Shift overlap intelligence</p>
+                  <p className="mt-1 text-slate-500 dark:text-slate-400">Prevents hidden seat collisions</p>
+                </div>
+              </div>
+            </div>
 
-          <h1 className="pointer-events-auto mt-6 text-4xl font-sans font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
-            Manage Your Library
-            <span className="block text-white">Smarter, Faster, Better</span>
-          </h1>
+            <div className="lg:col-span-5">
+              <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 backdrop-blur dark:border-white/10 dark:bg-[#0a1322]/90">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-white/10">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">Live Control Panel</p>
+                  <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[11px] dark:text-emerald-300">
+                    synced
+                  </span>
+                </div>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg font-cambria text-gray-300">
-            Automate student management, fee tracking, attendance, reminders and analytics - all
-            in one modern dashboard.
-          </p>
+                <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-lg border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-black/25">
+                    <p className="text-slate-500 dark:text-slate-400">Occupied Seats</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">418 / 500</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-black/25">
+                    <p className="text-slate-500 dark:text-slate-400">Renewals Due</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">27</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-black/25">
+                    <p className="text-slate-500 dark:text-slate-400">Today Check-ins</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">311</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-black/25">
+                    <p className="text-slate-500 dark:text-slate-400">Pending Fees</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">INR 68,900</p>
+                  </div>
+                </div>
 
-          <div className="pointer-events-auto mt-10 flex flex-wrap justify-center gap-4">
-            <PrimaryButton
-              onClick={() => {
-                if (!user) {
-                  router.push("/register");
-                } else {
-                  router.push("/dashboard");
-                }
-              }}
-            >
-              Start Free Trial <ArrowRight size={16} />
-            </PrimaryButton>
-
-            <SecondaryButton onClick={() => router.push("/login")}>View Demo</SecondaryButton>
-          </div>
-
-          <div className="relative mt-16 overflow-hidden rounded-xl border border-gray-100/20 shadow-xl">
-            <div className="max-md:h-60 flex h-90 w-full items-center justify-center rounded-xl bg-linear-to-b from-gray-200/10 to-gray-100/10 text-gray-300">
-              Dashboard Preview Placeholder
+                <div className="mt-4 space-y-2">
+                  {[
+                    "Seat 42 renewed for 3 months",
+                    "Payment logged for Karan Patel",
+                    "Shift-3 conflict blocked on Seat 17",
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-2 rounded-lg bg-slate-100 p-2 text-xs dark:bg-black/30">
+                      <ScanLine size={13} className="mt-0.5 text-teal-300" />
+                      <span className="text-slate-700 dark:text-slate-300">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="text-white">
-        <BlurredCircle classname="-left-20 top-0" />
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-6 py-16 sm:grid-cols-4">
-          <Stat value={5000} label="Active Students" />
-          <Stat value={120} label="Libraries" />
-          <Stat value={99.9} label="Uptime" suffix="%" />
-          <Stat value={24} label="Support" suffix="/7" />
-        </div>
-      </section>
+        <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {proof.map((item) => (
+            <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0b101b] dark:shadow-none">
+              <p className="text-2xl font-semibold text-teal-300">{item.value}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{item.label}</p>
+            </div>
+          ))}
+        </section>
 
-      <section id="features" className="pb-24 pt-12">
-        <BlurredCircle classname="left-auto top-70" />
-        <SectionHeader
-          title="Powerful Features"
-          subtitle="Everything you need to run your library efficiently."
-        />
-
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 sm:grid-cols-2 lg:grid-cols-3">
-          <FeatureCard
-            icon={<Shield />}
-            title="Secure Authentication"
-            desc="Role-based access control with encrypted sessions and middleware protection."
-          />
-
-          <FeatureCard
-            icon={<Bell />}
-            title="Smart Notifications"
-            desc="Automatic reminders for subscription expiry and pending payments."
-          />
-
-          <FeatureCard
-            icon={<BarChart3 />}
-            title="Analytics Dashboard"
-            desc="Track revenue, attendance and business growth in real time."
-          />
-
-          <FeatureCard
-            icon={<Users />}
-            title="Student Management"
-            desc="Create, update and manage students effortlessly."
-          />
-
-          <FeatureCard
-            icon={<CreditCard />}
-            title="Payment Tracking"
-            desc="Record payments, generate reports and export CSV."
-          />
-
-          <FeatureCard
-            icon={<Clock />}
-            title="Attendance Monitoring"
-            desc="Track daily attendance with check-in and check-out."
-          />
-        </div>
-      </section>
-
-      <section id="how" className="border-t border-gray-600/30 pt-16 text-white">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-4xl font-bold tracking-tight sm:text-4xl">How It Works</h2>
-            <p className="mt-4 text-lg text-gray-400">
-              Launch your digital library system in three simple steps. No technical expertise
-              required.
+        <section className="mt-14" id="features">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-500">Product Modules</p>
+              <h2 className="mt-2 text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">
+                Built for day-to-day operations
+              </h2>
+            </div>
+            <p className="max-w-sm text-sm text-slate-600 dark:text-slate-400">
+              Practical features with strong defaults. No cluttered config maze.
             </p>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 divide-y divide-gray-700/30 border border-gray-700/30 md:grid-cols-3 md:divide-x md:divide-y-0">
-            <div className="p-10">
-              <div className="text-sm font-semibold text-violet-400">STEP 01</div>
-              <h3 className="mt-4 text-2xl font-semibold">Create Your Account</h3>
-              <p className="mt-4 text-sm leading-relaxed text-gray-400">
-                Sign up in seconds and set up your institution profile. Customize library rules,
-                working hours, and categories to match your workflow.
-              </p>
-            </div>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {modules.map((item, idx) => (
+              <button
+                key={item.title}
+                onMouseEnter={() => setActive(idx)}
+                className={`rounded-2xl border p-5 text-left transition ${active === idx
+                  ? "border-teal-300/40 bg-teal-400/10"
+                  : "border-slate-200 bg-white hover:border-slate-300 dark:border-white/10 dark:bg-[#0b101b] dark:hover:border-white/20"
+                  }`}
+              >
+                <div className="inline-flex rounded-lg bg-slate-100 p-2 text-teal-600 dark:bg-black/30 dark:text-teal-300">{item.icon}</div>
+                <p className="mt-3 text-base font-semibold text-slate-900 dark:text-white">{item.title}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{item.detail}</p>
+              </button>
+            ))}
+          </div>
+        </section>
 
-            <div className="p-10">
-              <div className="text-sm font-semibold text-violet-400">STEP 02</div>
-              <h3 className="mt-4 text-2xl font-semibold">Add Students and Books</h3>
-              <p className="mt-4 text-sm leading-relaxed text-gray-400">
-                Import students, register books, and configure subscriptions. Everything is
-                centralized in a clean and intuitive dashboard.
-              </p>
-            </div>
-
-            <div className="p-10">
-              <div className="text-sm font-semibold text-violet-400">STEP 03</div>
-              <h3 className="mt-4 text-2xl font-semibold">Track, Automate and Grow</h3>
-              <p className="mt-4 text-sm leading-relaxed text-gray-400">
-                Monitor borrowing activity, automate reminders, manage fines, and gain insights
-                through advanced analytics to scale efficiently.
-              </p>
+        <section className="mt-14 grid gap-4 lg:grid-cols-12" id="how">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-7 dark:border-white/10 dark:bg-[#0b101b] dark:shadow-none">
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Workflow</p>
+            <h3 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">From inquiry to renewal</h3>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {[
+                { icon: <Users size={14} />, title: "Enroll", desc: "Create student + assign seat and shifts" },
+                { icon: <CalendarRange size={14} />, title: "Track", desc: "Daily attendance and expiry windows" },
+                { icon: <CreditCard size={14} />, title: "Collect", desc: "Record payments and pending fee updates" },
+                { icon: <Radar size={14} />, title: "Act", desc: "Use alerts and reports for retention decisions" },
+              ].map((step) => (
+                <div key={step.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-black/20">
+                  <div className="inline-flex rounded-md bg-white p-1.5 text-teal-600 dark:bg-white/10 dark:text-teal-300">{step.icon}</div>
+                  <p className="mt-2 font-medium text-slate-900 dark:text-white">{step.title}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{step.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
 
-      <section className="py-20 text-white">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Loved by Managers</h2>
-            <p className="mt-2 text-sm text-gray-400">
-              Trusted by growing institutions to simplify operations and scale efficiently.
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-5 dark:border-white/10 dark:bg-[#0b101b] dark:shadow-none">
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Security + Trust</p>
+            <h3 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">Operational confidence</h3>
+            <div className="mt-4 space-y-3 text-sm">
+              {[
+                { icon: <LockKeyhole size={15} />, text: "Role-aware auth boundaries for staff and managers" },
+                { icon: <Blocks size={15} />, text: "Organization-level data segregation by design" },
+                { icon: <CircleAlert size={15} />, text: "Critical events surfaced through unified notifications" },
+                { icon: <Check size={15} />, text: "Audit-friendly payment and attendance records" },
+              ].map((row) => (
+                <div key={row.text} className="flex items-start gap-2 rounded-lg bg-slate-50 p-3 text-slate-700 dark:bg-black/20 dark:text-slate-300">
+                  <span className="mt-0.5 text-teal-300">{row.icon}</span>
+                  <span>{row.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-16">
+          <Pricing />
+        </section>
+
+        <section className="mt-12 rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-slate-100 px-6 py-10 text-center sm:px-10 dark:border-white/10 dark:from-[#0b101b] dark:to-[#101b2d]">
+          <p className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-700 dark:border-white/20 dark:bg-white/5 dark:text-slate-300">
+            Ready to digitalize your Library operations?
+          </p>
+          <h3 className="mx-auto mt-4 max-w-3xl text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">
+            Start your free trial and experience the difference today.
+          </h3>
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+            Start free, set up in minutes, and scale with confidence as your student base grows.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={goPrimary}
+              className="inline-flex items-center gap-2 rounded-xl bg-teal-400 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-teal-300"
+            >
+              Start Free Trial <ArrowRight size={15} />
+            </button>
+            <button
+              onClick={() => router.push("/login")}
+              className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+            >
+              Sign In
+            </button>
+          </div>
+        </section>
+
+      </div>
+      <footer className="mt-16 mx-10 border-t rounded-tl-3xl rounded-tr-3xl border-slate-200 bg-white dark:border-white/10 dark:bg-[#06070b]">
+        <div className="mx-auto max-w-[1240px] px-6 py-12 sm:px-10">
+          <div className="grid gap-10 grid-cols-2">
+
+            {/* Brand Section */}
+            <div>
+              <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Fluxify
+              </h4>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+                The operating system for modern library and seat-based study centers.
+                Built to simplify admissions, attendance, renewals, and operations.
+              </p>
+
+              <p className="mt-4 text-xs text-slate-500 dark:text-slate-500">
+                Built in public by{" "}
+                <a
+                  href="https://github.com/akashbghl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-teal-500 hover:underline"
+                >
+                  @akashbghl
+                </a>
+              </p>
+            </div>
+            <div className="flex ml-auto gap-4">
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-400">
+                Connect:
+              </p>
+              <ul className="flex space-x-4 text-sm text-slate-600 dark:text-slate-400">
+                {[
+                  { label: "Github", href: "https://github.com/akashbghl" },
+                  { label: "Linkedin", href: "https://www.linkedin.com/in/akash-baghel-68921a281/" },
+                  { label: "Twitter/X", href: "https://x.com/akashbghl" },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <a
+                      href={item.href}
+                      className="hover:text-slate-900 dark:hover:text-white transition"
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 text-xs text-slate-500 dark:border-white/10 sm:flex-row">
+            <p>
+              © {new Date().getFullYear()} Fluxify. All rights reserved.
+            </p>
+            <p>
+              Designed for high-efficiency study center operations.
             </p>
           </div>
-
-          <div className="mt-10 grid grid-cols-1 divide-y divide-gray-700/30 border border-gray-700/30 md:grid-cols-3 md:divide-x md:divide-y-0">
-            <div className="p-10">
-              <div className="text-sm text-gray-500">Library Owner</div>
-              <h3 className="mt-2 text-xl font-semibold">Amit Sharma</h3>
-
-              <p className="mt-6 text-sm leading-relaxed text-gray-400">
-                &quot;Fluxify reduced my administrative workload by nearly 70%. Student management,
-                reminders, and fine tracking are fully automated. It feels like having an extra
-                staff member.&quot;
-              </p>
-
-              <div className="mt-6 text-xs text-gray-600">Managing 1,200+ students</div>
-            </div>
-
-            <div className="p-10">
-              <div className="text-sm text-gray-500">Library Manager</div>
-              <h3 className="mt-2 text-xl font-semibold">Neha Gupta</h3>
-
-              <p className="mt-6 text-sm leading-relaxed text-gray-400">
-                &quot;The analytics dashboard gives me real-time visibility into borrowing trends and
-                overdue patterns. Decision-making is faster and more data-driven.&quot;
-              </p>
-
-              <div className="mt-6 text-xs text-gray-600">3 Branch Locations</div>
-            </div>
-
-            <div className="p-10">
-              <div className="text-sm text-gray-500">Founder</div>
-              <h3 className="mt-2 text-xl font-semibold">Rahul Verma</h3>
-
-              <p className="mt-6 text-sm leading-relaxed text-gray-400">
-                &quot;Clean interface, lightning-fast performance, and outstanding customer support.
-                Implementation was seamless across our entire institution.&quot;
-              </p>
-
-              <div className="mt-6 text-xs text-gray-600">5,000+ active members</div>
-            </div>
-          </div>
         </div>
-      </section>
-
-      <Pricing />
-
-      <section id="faq" className="py-24">
-        <BlurredCircle classname="left-auto top-50" />
-        <SectionHeader
-          title="Frequently Asked Questions"
-          subtitle="Everything you need to know about using Fluxify."
-        />
-
-        <div className="mx-auto max-w-4xl space-y-0.5 px-6">
-          <FAQItem
-            q="How secure is my library data?"
-            a="Security is a top priority at Fluxify. We use secure authentication mechanisms, encrypted cookies, and protected database access to ensure your library records, member data, and transaction history remain safe and confidential."
-          />
-
-          <FAQItem
-            q="Can I export reports and library data?"
-            a="Yes. Fluxify allows you to export detailed reports in CSV format at any time. This includes circulation records, member activity, overdue summaries, and inventory data making audits and administrative reviews simple and efficient."
-          />
-
-          <FAQItem
-            q="What kind of support do you provide?"
-            a="We provide responsive support via Email and WhatsApp to assist with onboarding, troubleshooting, and general inquiries. Our goal is to ensure your library operations run smoothly without interruptions."
-          />
-
-          <FAQItem
-            q="Is Fluxify suitable for schools and colleges?"
-            a="Absolutely. Fluxify is designed for schools, colleges, universities, and private institutions. Whether you manage a small academic library or a large collection, the system scales to meet your operational needs."
-          />
-
-          <FAQItem
-            q="Can multiple librarians use the system at the same time?"
-            a="Yes. Fluxify supports multi-user access with role-based permissions. Administrators can assign different access levels to librarians and staff to maintain operational control and accountability."
-          />
-        </div>
-      </section>
-
-      <section className="relative m-auto mb-4 overflow-hidden rounded-xl border border-gray-300/20 bg-gray-700/10 py-4 text-white max-md:mx-4 sm:mx-28">
-        <div className="relative mx-auto max-w-5xl px-6 text-center">
-          <span className="inline-block rounded-full bg-white/10 px-4 py-1 text-sm text-gray-300 backdrop-blur">
-            Trusted by 10,000+ readers
-          </span>
-
-          <h2 className="mt-4 text-2xl font-bold leading-tight sm:text-5xl">
-            Transform the way you manage your library
-          </h2>
-
-          <p className="mx-auto mt-4 max-w-2xl text-sm text-gray-400">
-            Organize books, track borrowers, and gain powerful insights - all in one modern,
-            easy-to-use platform built for growing libraries.
-          </p>
-
-          <div className="mt-5 flex flex-wrap justify-center gap-6 text-sm text-gray-400">
-            <div className="flex items-center gap-2">
-              <span className="text-green-400">✓</span> No credit card required
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-green-400">✓</span> Setup in under 5 minutes
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-green-400">✓</span> Cancel anytime
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              onClick={() => {
-                if (!user) {
-                  router.push("/register");
-                } else {
-                  router.push("/dashboard");
-                }
-              }}
-              className="cursor-pointer rounded-xl bg-gradient-to-r from-violet-500 to-pink-500 px-8 py-4 text-sm font-semibold text-white shadow-lg transition hover:scale-105 hover:shadow-xl"
-            >
-              Start Free Trial
-            </button>
-
-            <button
-              onClick={() => router.push("/demo")}
-              className="rounded-xl border border-white/20 px-8 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
-            >
-              Book a Demo
-            </button>
-          </div>
-
-          <p className="mt-8 text-xs text-gray-500">
-            14-day free trial - No hidden fees - Secure and encrypted
-          </p>
-        </div>
-      </section>
-
-      <footer className="border-t border-gray-300/20 py-10 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} Fluxify | All rights reserved.
       </footer>
     </div>
   );
