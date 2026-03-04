@@ -29,7 +29,7 @@ const Mnavbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur">
+    <header className="sticky top-0 z-40 backdrop-blur max-md:border-b border-slate-200/20">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <div className="flex items-center gap-1">
           <img
@@ -60,7 +60,7 @@ const Mnavbar = () => {
           </a>
         </nav>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 max-md:gap-4">
           <button
             onClick={toggleTheme}
             aria-label="Toggle dark mode"

@@ -281,7 +281,7 @@ export default function HomePageClient() {
         </section>
 
       </div>
-      <footer className="mt-16 mx-10 border-t rounded-tl-3xl rounded-tr-3xl border-slate-200 bg-white dark:border-white/10 dark:bg-[#06070b]">
+      <footer className="mt-16 mx-10 max-md:mx-4 border-t rounded-tl-3xl rounded-tr-3xl border-slate-200 bg-white dark:border-white/10 dark:bg-[#06070b]">
         <div className="mx-auto max-w-[1240px] px-6 py-12 sm:px-10">
           <div className="grid gap-10 grid-cols-2">
 
@@ -307,11 +307,11 @@ export default function HomePageClient() {
                 </a>
               </p>
             </div>
-            <div className="flex ml-auto gap-4">
+            <div className="flex max-md:flex-col ml-auto gap-4">
               <p className="text-sm font-bold text-slate-600 dark:text-slate-400">
                 Connect:
               </p>
-              <ul className="flex space-x-4 text-sm text-slate-600 dark:text-slate-400">
+              <ul className="flex max-md:flex-col space-x-4 text-sm text-slate-600 dark:text-slate-400">
                 {[
                   { label: "Github", href: "https://github.com/akashbghl" },
                   { label: "Linkedin", href: "https://www.linkedin.com/in/akash-baghel-68921a281/" },
