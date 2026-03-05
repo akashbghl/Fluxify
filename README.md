@@ -1,155 +1,289 @@
 # Fluxify
 
-[![Repository](https://img.shields.io/badge/github-akashbghl/Fluxify-181717?logo=github&logoColor=white)](https://github.com/akashbghl/Fluxify)
+Fluxify is a multi-tenant SaaS platform for libraries and study centers to manage:
+- student enrollment and renewals
+- seat and shift allocation (with overlap conflict checks)
+- attendance check-in/check-out
+- payment tracking
+- subscription plans and notifications
+
+Built with Next.js App Router, TypeScript, MongoDB, Tailwind CSS, and Razorpay.
+
+## Live URL
+- `https://fluxifyio.vercel.app`
+
+## Core Features
+
+### 1. Organization and Auth
+- Organization + manager account is created during registration
+- JWT-based session with HTTP-only cookie
+- Middleware-protected dashboard and private APIs
+
+### 2. Student Management
+- Add, edit, delete students
+- Plan durations: `1_MONTH`, `3_MONTH`, `6_MONTH`, `12_MONTH`
+- Multi-shift support (plan-gated)
+- Student renewal API (`PATCH /api/students`) with optional payment entry
+
+### 3. Seat + Shift Logic
+- Seat capacity is fixed per organization
+- Shift overlap collision detection prevents double seat allocation
+- Supports single and multi-shift enrollment (depending on plan limits)
+
+### 4. Attendance
+- Manual check-in/check-out
+- Day-wise attendance records
+- Dashboard attendance metrics
+
+### 5. Payments
+- Manager-entered payment records
+- Payment-to-student linkage
+- Auto-updates `feesPaid` and `pendingFees`
+
+### 6. Subscription / Billing
+- Razorpay order initiation + verification + webhook support
+- Organization plan status updates via subscription workflow
+
+### 7. Notifications API
+- Unified notifications from:
+  - student expiry/renewal/enrollment
+  - payments
+  - attendance
+  - subscription states
+- Supports category filtering and limit query params
+
+### 8. Landing + SEO
+- Theme-aware landing page (light/dark)
+- Dynamic `robots.txt` and `sitemap.xml`
+- OpenGraph/Twitter metadata + structured data
 
 ---
 
-## 🧠 Project Overview
-
-Fluxify is a modern full-stack web application built with Next.js, Node.js, and TypeScript. It provides a seamless, scalable platform that integrates user authentication and a robust API layer to deliver dynamic, interactive web experiences.
-
-Designed to simplify complex workflows, Fluxify aims to empower developers and users by offering a clean, performant interface coupled with a powerful backend. Its architecture leverages server-side rendering and API routes for optimized performance and security.
-
----
-
-## 🚀 Key Features
-
-- **User Authentication**  
-  Secure and reliable authentication system to manage user sessions and protect sensitive data.
-
-- **API Layer**  
-  Well-structured API routes enabling smooth communication between frontend and backend.
-
-- **TypeScript Support**  
-  Full TypeScript integration for enhanced developer experience and maintainability.
-
-- **Next.js Framework**  
-  Utilizes Next.js capabilities like server-side rendering and static site generation for fast load times.
-
-- **Modular Architecture**  
-  Clear separation of concerns with dedicated folders for components, hooks, middleware, and models.
-
----
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
-- Next.js
-- React (via Next.js)
+- Next.js 16 (App Router)
+- React 19
 - TypeScript
-- PostCSS
+- Tailwind CSS v4
+- Lucide Icons
+- Framer Motion
+- React Toastify
 
 ### Backend
-- Node.js
-- API Routes (Next.js)
+- Next.js Route Handlers (`app/api/*`)
+- MongoDB + Mongoose
+- JWT auth
+- Zod validation
 
-### Tools & Configurations
-- ESLint (eslint.config.mjs)
-- Vercel (vercel.json)
-- TypeScript (tsconfig.json)
-- Package Management (npm)
-
----
-
-## 📂 Project Structure
-
-- **app/**  
-  Core application logic and pages.
-
-- **components/**  
-  Reusable React components.
-
-- **hooks/**  
-  Custom React hooks for state and lifecycle management.
-
-- **lib/**  
-  Utility functions and libraries.
-
-- **models/**  
-  Data models and schemas.
-
-- **middleware.ts**  
-  Middleware functions for request handling and authentication.
-
-- **public/**  
-  Static assets like images and fonts.
-
-- Configuration files:  
-  `.gitignore`, `eslint.config.mjs`, `next.config.ts`, `postcss.config.mjs`, `tsconfig.json`, `vercel.json`
+### Integrations
+- Razorpay (subscriptions/payments)
+- Nodemailer (email reminders)
+- Twilio WhatsApp (optional messaging)
+- node-cron (scheduled tasks)
 
 ---
 
-## ⚙️ Installation & Setup
+## Project Structure
+
+```txt
+app/
+  (auth)/                 # login/register pages
+  dashboard/              # protected SaaS UI
+  api/                    # route handlers
+  robots.ts               # dynamic robots.txt
+  sitemap.ts              # dynamic sitemap.xml
+
+components/
+  layout/                 # dashboard layout components
+  students/               # student UI blocks/forms/cards
+  landing*/               # homepage + pricing components
+
+hooks/
+  useAuth.ts              # auth + org state on client
+
+lib/
+  auth.ts                 # JWT helpers
+  db.ts                   # Mongo connection
+  requireAuth.ts          # cookie-auth guard for APIs
+  validators.ts           # zod schemas
+  studentShift.ts         # shift normalization
+  shiftOverlap.ts         # overlap detection logic
+  planLimits.ts           # FREE/PRO feature gates
+  mail.ts / whatsapp.ts   # communication helpers
+
+models/
+  User.ts
+  Organization.ts
+  Student.ts
+  Payment.ts
+  Attendance.ts
+  Subscription.ts
+```
+
+---
+
+## API Overview
+
+### Auth
+- `POST /api/auth` (`type: "register" | "login"`)
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+
+### Organization
+- `POST /api/organization/setup`
+
+### Students
+- `GET /api/students`
+- `POST /api/students` (create)
+- `PUT /api/students` (update)
+- `PATCH /api/students` (renew)
+- `DELETE /api/students?id=...`
+- `POST /api/students/check-seat`
+
+### Attendance
+- `GET /api/attendance`
+- `POST /api/attendance` (check-in)
+- `PUT /api/attendance` (check-out)
+
+### Payments
+- `GET /api/payments`
+- `POST /api/payments`
+
+### Dashboard / Settings / Notifications
+- `GET /api/dashboard`
+- `GET|PUT /api/settings`
+- `GET /api/notifications`
+
+### Subscription + Razorpay
+- `POST /api/razorpay/initiate-payment`
+- `POST /api/razorpay/verify-payment`
+- `POST /api/razorpay/webhook`
+
+### Cron / Reminder
+- `GET /api/reminders`
+- `GET /api/cron/expire-students?secret=...`
+
+---
+
+## Environment Variables
+
+Create `.env.local` in project root:
+
+```env
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# DB
+MONGODB_URI=mongodb+srv://...
+
+# Auth
+JWT_SECRET=your_jwt_secret
+
+# Razorpay
+NEXT_PUBLIC_RAZORPAY_KEY=rzp_test_xxx
+RAZORPAY_LIVE_KEY=rzp_test_xxx
+RAZORPAY_LIVE_SECRET=your_secret
+RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
+
+# Cron security
+CRON_SECRET=your_cron_secret
+
+# Mail (optional)
+EMAIL_USER=you@example.com
+EMAIL_PASS=app_password
+
+# Twilio WhatsApp (optional)
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+```
+
+Notes:
+- In production, ensure secure cookie behavior and HTTPS are configured correctly.
+- If you are not using email/WhatsApp reminders, keep those integrations disabled.
+
+---
+
+## Local Development
 
 ### Prerequisites
+- Node.js 18+ (recommended)
+- npm
+- MongoDB instance
 
-- Node.js (v16 or later recommended)  
-- npm (comes with Node.js)  
-
-### Installation Steps
-
-1. Clone the repository  
-   `git clone https://github.com/akashbghl/Fluxify.git`
-
-2. Navigate to the project directory  
-   `cd Fluxify`
-
-3. Install dependencies  
-   `npm install`
-
-### Environment Variables
-
-Create a `.env.local` file in the root directory and add necessary environment variables. Example:
-
-```
-NEXT_PUBLIC_API_URL=https://api.example.com
-AUTH_SECRET=your_auth_secret_here
+### Install
+```bash
+npm install
 ```
 
-> **Note:** The exact environment variables depend on your authentication and API setup.
-
----
-
-## ▶️ Running the Project
-
-Start the development server:
-
+### Run
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the app.
+Open `http://localhost:3000`.
+
+### Lint
+```bash
+npm run lint
+```
+
+### Build
+```bash
+npm run build
+npm run start
+```
 
 ---
 
-## 🌱 Future Improvements
+## Default SaaS Workflow
 
-- Implement role-based access control for enhanced security.  
-- Add comprehensive unit and integration tests.  
-- Integrate real-time features using WebSockets or similar technologies.  
-- Enhance UI/UX with additional customizable themes.  
-- Expand API functionality with more endpoints and better error handling.
-
----
-
-## 🤝 Contribution Guidelines
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository.  
-2. Create a feature branch (`git checkout -b feature/your-feature`).  
-3. Commit your changes (`git commit -m 'Add some feature'`).  
-4. Push to the branch (`git push origin feature/your-feature`).  
-5. Open a Pull Request describing your changes.
-
-Please follow the existing code style and ensure your code passes linting and tests.
+1. Register manager account
+2. Complete organization setup (seats/shifts)
+3. Add students with plan + seat + shift(s)
+4. Mark attendance daily
+5. Record payments and monitor pending fees
+6. Renew students from student listing
+7. Track expiring students and notifications
+8. Upgrade subscription if needed
 
 ---
 
-## 📝 License
+## SEO
 
-This project is licensed under the [MIT License](LICENSE).
+Fluxify includes:
+- metadata in `app/layout.tsx`
+- `app/robots.ts`
+- `app/sitemap.ts`
+- homepage structured data in `app/page.tsx`
+
+To finalize SEO in production:
+- set correct `NEXT_PUBLIC_APP_URL`
+- submit sitemap in Google Search Console
+- add a branded OG image
 
 ---
 
-This README was generated using an AI-powered tool.
+## Deployment
+
+Recommended: Vercel
+
+1. Push repo to GitHub
+2. Import project in Vercel
+3. Add environment variables
+4. Deploy
+5. Configure webhook endpoints and cron secret routes
+
+---
+
+## Security Notes
+
+- APIs under `/api/*` and pages under `/dashboard/*` are middleware-protected
+- Webhook/reminder/cron routes are intentionally exempted in middleware logic
+- Keep secrets only in env vars
+- Validate all incoming payloads via `zod`
+
+---
+
+## License
