@@ -55,8 +55,8 @@ const Mnavbar = () => {
           <a href="#pricing" className="transition hover:text-slate-900 dark:hover:text-white">
             Pricing
           </a>
-          <a href="#faq" className="transition hover:text-slate-900 dark:hover:text-white">
-            FAQ
+          <a href="#app" className="transition hover:text-slate-900 dark:hover:text-white">
+            Downloads
           </a>
         </nav>
 

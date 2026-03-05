@@ -11,6 +11,7 @@ import {
   CircleAlert,
   Clock3,
   CreditCard,
+  Download,
   Layers2,
   LockKeyhole,
   Radar,
@@ -246,6 +247,44 @@ export default function HomePageClient() {
                   <span>{row.text}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="app" className="mt-14 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#0b101b] dark:shadow-none sm:p-8">
+          <div className="grid items-center gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Mobile App</p>
+              <h3 className="mt-2 text-2xl font-semibold text-slate-900 sm:text-3xl dark:text-white">
+                Download Fluxify Android App
+              </h3>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+                Manage your library on the go with our Android app. Check attendance, process payments, and stay updated with real-time notifications from anywhere.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-500">
+                <span className="rounded-full border border-slate-300 bg-slate-100 px-3 py-1 dark:border-white/15 dark:bg-white/5">
+                  Android APP
+                </span>
+                <span className="rounded-full border border-slate-300 bg-slate-100 px-3 py-1 dark:border-white/15 dark:bg-white/5">
+                  Direct Download
+                </span>
+                <span className="rounded-full border border-slate-300 bg-slate-100 px-3 py-1 dark:border-white/15 dark:bg-white/5">
+                  Version 1.0.0
+                </span>
+              </div>
+            </div>
+
+            <div className="lg:col-span-4 lg:justify-self-end">
+              <a
+                href="/fluxify.apk"
+                download
+                className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-600 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+              >
+                Download APK <Download size={15} />
+              </a>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">
+                Version 1.0.0 - Released March 2026
+              </p>
             </div>
           </div>
         </section>
