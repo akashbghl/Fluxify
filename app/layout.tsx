@@ -34,23 +34,27 @@ export const metadata: Metadata = {
     "library dashboard",
   ],
   alternates: {
-    canonical: "/",
+    canonical: "https://fluxifyio.vercel.app",
   },
   openGraph: {
     type: "website",
-    url: "/",
+    url: "https://fluxifyio.vercel.app",
     siteName: "Fluxify",
     title: "Fluxify | Library Management Software",
+    images: ["https://fluxifyio.vercel.app/NLogo.jpg"
+    ],
     description:
-      "Run your library operations with student management, attendance, payment tracking, and smart reminders.",
+      "Fluxify helps libraries manage students, seats, shifts, attendance, payments, reminders, and analytics from one dashboard.",
     locale: "en_IN",
   },
   twitter: {
     card: "summary_large_image",
     title: "Fluxify | Library Management Software",
     description:
-      "Manage your library with modern student, attendance, payment and analytics workflows.",
-  },
+      "Fluxify helps libraries manage students, seats, shifts, attendance, payments, reminders, and analytics from one dashboard.",
+    creator: "@akashbaghel",
+    images: ["https://fluxifyio.vercel.app/NLogo.jpg"],
+    },
   robots: {
     index: true,
     follow: true,

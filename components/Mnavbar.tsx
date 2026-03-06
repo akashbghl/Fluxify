@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { Moon, Sparkles, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,10 +9,8 @@ type ThemeMode = "light" | "dark";
 
 const Mnavbar = () => {
   const router = useRouter();
-  const [loggedIn] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return Boolean(localStorage.getItem("user"));
-  });
+  const { user } = useAuth();
+
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window === "undefined") return "dark";
     const saved = localStorage.getItem("theme") as ThemeMode | null;
@@ -67,16 +66,17 @@ const Mnavbar = () => {
             className="cursor-pointer rounded-full bg-white p-2 text-slate-700 transition hover:bg-slate-100 dark:border-white/20 dark:bg-black/20 dark:text-white dark:hover:bg-white/10"
           >
             <span
-              className={`block transform-gpu transition-transform duration-500 ${
-                theme === "dark" ? "rotate-0" : "rotate-180"
-              }`}
+              className={`block transform-gpu transition-transform duration-500 ${theme === "dark" ? "rotate-0" : "rotate-180"
+                }`}
             >
               {theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}
             </span>
           </button>
 
-          {loggedIn ? (
-            <PrimaryButton onClick={() => router.push("/dashboard")}>Go to Dashboard</PrimaryButton>
+          {user ? (
+            <button onClick={() => router.push("/dashboard")}
+              className="ml-4 cursor-pointer rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-teal-400 dark:text-slate-900 dark:hover:bg-teal-300"
+            >Go to Dashboard</button>
           ) : (
             <div className="flex gap-2">
               <button
