@@ -34,7 +34,7 @@ export async function sendMail({
 }: SendMailOptions) {
   try {
     const info = await mailTransporter.sendMail({
-      from: `"NextStep" <${EMAIL_USER}>`,
+      from: `"Fluxify Team" <${EMAIL_USER}>`,
       to,
       subject,
       html,
