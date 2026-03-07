@@ -3,10 +3,13 @@ import crypto from "crypto";
 import { connectDB } from "@/lib/db";
 import Subscription from "@/models/Subscription";
 import Organization from "@/models/Organization";
+import User from "@/models/User";
+import { sendMail } from "@/lib/mail";
+import { getSubscriptionActivatedEmailTemplate } from "@/lib/emailTemplates";
 
 export const runtime = "nodejs"; // Important for server-side API
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   console.log("GET webhook hit");
   return new Response("ok");
 }
@@ -62,6 +65,33 @@ export async function POST(req: NextRequest) {
         subscriptionStatus: "ACTIVE",
         subscriptionEndDate: endDate,
       });
+
+      const [organization, manager] = await Promise.all([
+        Organization.findById(subscription.organization).select("name"),
+        User.findOne({
+          organizationId: subscription.organization,
+          role: "MANAGER",
+        }).select("name email"),
+      ]);
+
+      if (manager?.email) {
+        const template = getSubscriptionActivatedEmailTemplate({
+          recipientName: manager.name || "Manager",
+          organizationName: organization?.name || "Your Organization",
+          plan: subscription.plan,
+          startDate,
+          endDate,
+          amount: subscription.amount,
+          currency: subscription.currency,
+          paymentId: paymentId,
+        });
+
+        await sendMail({
+          to: manager.email,
+          subject: template.subject,
+          html: template.html,
+        });
+      }
     }
 
     if (event.event === "payment.failed") {
