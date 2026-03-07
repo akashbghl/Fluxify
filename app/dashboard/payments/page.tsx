@@ -22,7 +22,9 @@ interface Payment {
   paidAt: string;
   remarks?: string;
   transactionId?: string;
-  student: Student;
+  student?: Student;
+  studentName?: string;
+  studentPhone?: string;
 }
 
 interface PaymentFormState {
@@ -118,7 +120,9 @@ export default function PaymentsPage() {
 
   const filteredPayments = useMemo(() => {
     return payments.filter((p) => {
-      const query = `${p.student?.name || ""} ${p.student?.phone || ""} ${p.mode} ${p.amount} ${
+      const resolvedName = p.student?.name || p.studentName || "";
+      const resolvedPhone = p.student?.phone || p.studentPhone || "";
+      const query = `${resolvedName} ${resolvedPhone} ${p.mode} ${p.amount} ${
         p.transactionId || ""
       } ${p.remarks || ""}`
         .toLowerCase()
@@ -206,8 +210,8 @@ export default function PaymentsPage() {
               {filteredPayments.map((p) => (
                 <tr key={p._id} className="border-b last:border-none">
                   <td className="px-3 py-2">
-                    <p className="font-medium text-slate-900">{p.student?.name || "-"}</p>
-                    <p className="text-xs text-slate-500">{p.student?.phone || ""}</p>
+                    <p className="font-medium text-slate-900">{p.student?.name || p.studentName || "-"}</p>
+                    <p className="text-xs text-slate-500">{p.student?.phone || p.studentPhone || ""}</p>
                   </td>
                   <td className="px-3 py-2 font-semibold text-slate-900">INR {p.amount}</td>
                   <td className="px-3 py-2">{p.mode}</td>

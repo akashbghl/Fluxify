@@ -21,6 +21,11 @@ export default function RegisterPage() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -28,10 +33,92 @@ export default function RegisterPage() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const isEmailField = e.target.name === "email";
     setForm((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
+
+    if (isEmailField) {
+      setOtp("");
+      setOtpSent(false);
+      setOtpVerified(false);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (sendingOtp) return;
+    if (!form.email.trim()) {
+      setError("Please enter email first");
+      return;
+    }
+
+    setError("");
+    setSendingOtp(true);
+
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "send_register_otp",
+          email: form.email,
+          name: form.name,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to send verification code");
+      }
+
+      setOtpSent(true);
+      setOtpVerified(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to send verification code");
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (verifyingOtp) return;
+    if (!form.email.trim() || !otp.trim()) {
+      setError("Enter email and verification code");
+      return;
+    }
+
+    setError("");
+    setVerifyingOtp(true);
+
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "verify_register_otp",
+          email: form.email,
+          otp,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "OTP verification failed");
+      }
+
+      setOtpVerified(true);
+    } catch (err: unknown) {
+      setOtpVerified(false);
+      setError(err instanceof Error ? err.message : "OTP verification failed");
+    } finally {
+      setVerifyingOtp(false);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -42,6 +129,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      if (!otpVerified) {
+        throw new Error("Please verify your email before creating account");
+      }
+
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: {
@@ -146,6 +237,40 @@ export default function RegisterPage() {
                   className="w-full rounded-xl border border-slate-300 bg-white px-10 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-400/70 focus:bg-white dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-teal-300/50 dark:focus:bg-white/10"
                 />
               </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={sendingOtp || !form.email.trim()}
+                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/20 dark:text-slate-200 dark:hover:bg-white/10"
+                >
+                  {sendingOtp ? "Sending..." : otpSent ? "Resend Code" : "Send Code"}
+                </button>
+                {otpVerified && (
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-300">
+                    Email verified
+                  </span>
+                )}
+              </div>
+
+              {otpSent && !otpVerified && (
+                <div className="flex items-center gap-2">
+                  <input
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="Enter verification code"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-400/70 focus:bg-white dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-teal-300/50 dark:focus:bg-white/10"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleVerifyOtp}
+                    disabled={verifyingOtp || !otp.trim()}
+                    className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-teal-500 dark:text-slate-900 dark:hover:bg-teal-400"
+                  >
+                    {verifyingOtp ? "Verifying..." : "Verify"}
+                  </button>
+                </div>
+              )}
 
               <div className="relative">
                 <Lock
@@ -196,7 +321,7 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              <Button type="submit" loading={loading} className="w-full">
+              <Button type="submit" loading={loading} className="w-full" disabled={!otpVerified}>
                 {loading ? "Creating account..." : "Create Account"}
               </Button>
 

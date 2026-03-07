@@ -140,14 +140,21 @@ export async function POST(req: NextRequest) {
     }
 
     const organization = await Organization.findById(organizationId);
-    if (organization?.plan === "FREE" && organization.seatConfig?.totalSeats >= 50) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Free plan allows max 50 students. Please upgrade your plan.",
-        },
-        { status: 400 }
-      );
+    if (organization?.plan === "FREE") {
+      const activeStudentsCount = await Student.countDocuments({
+        organizationId,
+        status: "ACTIVE",
+      });
+
+      if (activeStudentsCount >= 50) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Free plan allows max 50 active students. Please upgrade your plan.",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     if (isFreePlan(organization?.plan) && !canUseMultiShiftEnrollment(organization?.plan) && shiftNames.length > 1) {
@@ -207,6 +214,9 @@ export async function POST(req: NextRequest) {
         await Payment.create({
           student: student._id,
           organizationId,
+          studentName: student.name,
+          studentEmail: student.email || undefined,
+          studentPhone: student.phone || undefined,
           amount: initialPaidAmount,
           mode: paymentMode || "CASH",
           transactionId: transactionId || undefined,
@@ -448,6 +458,9 @@ export async function PATCH(req: NextRequest) {
       await Payment.create({
         student: student._id,
         organizationId,
+        studentName: student.name,
+        studentEmail: student.email || undefined,
+        studentPhone: student.phone || undefined,
         amount: amountPaid,
         mode: data.paymentMode || "CASH",
         transactionId: data.transactionId || undefined,
