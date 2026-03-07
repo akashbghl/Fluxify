@@ -100,3 +100,42 @@ export function getOrganizationUpdateEmailTemplate(params: {
   };
 }
 
+export function getStudentSelfRegistrationRequestTemplate(params: {
+  managerName: string;
+  organizationName: string;
+  studentName: string;
+  studentEmail?: string;
+  studentPhone: string;
+  requestedPlan: string;
+  requestedShift: string;
+  notes?: string;
+  reviewUrl: string;
+}): EmailTemplate {
+  return {
+    subject: `${APP_NAME}: New Student Request - ${params.studentName}`,
+    html: wrapTemplate(`
+      <p style="margin:0 0 8px 0;">Hi ${params.managerName},</p>
+      <p style="margin:0 0 12px 0;">
+        A student submitted a new registration request for <strong>${params.organizationName}</strong>.
+      </p>
+      <p style="margin:0 0 6px 0;"><strong>Name:</strong> ${params.studentName}</p>
+      <p style="margin:0 0 6px 0;"><strong>Email:</strong> ${params.studentEmail || "N/A"}</p>
+      <p style="margin:0 0 6px 0;"><strong>Phone:</strong> ${params.studentPhone}</p>
+      <p style="margin:0 0 6px 0;"><strong>Requested Plan:</strong> ${params.requestedPlan}</p>
+      <p style="margin:0 0 6px 0;"><strong>Preferred Shift:</strong> ${params.requestedShift}</p>
+      ${
+        params.notes
+          ? `<p style="margin:0 0 10px 0;"><strong>Notes:</strong> ${params.notes}</p>`
+          : ""
+      }
+      <p style="margin:14px 0 0 0;">
+        <a href="${params.reviewUrl}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;">
+          Review and Register Student
+        </a>
+      </p>
+      <p style="margin:10px 0 0 0;font-size:12px;color:#64748b;">
+        Use this link to verify details and save via existing student registration flow.
+      </p>
+    `),
+  };
+}
