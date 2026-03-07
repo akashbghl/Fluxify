@@ -8,6 +8,8 @@ import StudentCard, {
 } from "@/components/students/StudentCard";
 import Button from "@/components/ui/Button";
 import { normalizeStudentShiftNames } from "@/lib/studentShift";
+import { useAuth } from "@/hooks/useAuth";
+import OrganizationSetupModal from "@/components/OrganizationSetupModal";
 
 type Plan = "1_MONTH" | "3_MONTH" | "6_MONTH" | "12_MONTH";
 type PaymentMode = "CASH" | "UPI" | "CARD" | "NETBANKING";
@@ -22,6 +24,11 @@ interface RenewalForm {
 
 export default function StudentsPage() {
   const router = useRouter();
+  const { organization, user, loading: authLoading, refreshUser } = useAuth();
+  const organizationId = organization?._id || user?.organizationId || "";
+  const organizationPlan =
+    organization?.plan || user?.organizationSubscription || undefined;
+  const isOrganizationConfigured = Boolean(organization?.isConfigured);
 
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,8 +71,24 @@ export default function StudentsPage() {
   };
 
   useEffect(() => {
+    if (!authLoading && user && !organization) {
+      refreshUser().catch(() => {
+        // ignore refresh failure and continue with fallback gating
+      });
+    }
+  }, [authLoading, user, organization, refreshUser]);
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (!isOrganizationConfigured) {
+      setStudents([]);
+      setLoading(false);
+      return;
+    }
+
     fetchStudents();
-  }, []);
+  }, [authLoading, isOrganizationConfigured]);
 
   /* ============================
       Filter Logic
@@ -186,7 +209,7 @@ export default function StudentsPage() {
       Loading State
   ============================ */
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
@@ -200,7 +223,20 @@ export default function StudentsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="space-y-5">
+      {!!organizationId && (
+        <OrganizationSetupModal
+          open={!isOrganizationConfigured}
+          organizationId={organizationId}
+          organizationPlan={organizationPlan}
+          onSuccess={() => window.location.reload()}
+        />
+      )}
+
+      <div
+        className={`space-y-5 ${
+          !isOrganizationConfigured ? "pointer-events-none select-none blur-sm" : ""
+        }`}
+      >
 
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
