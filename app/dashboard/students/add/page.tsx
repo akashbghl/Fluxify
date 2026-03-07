@@ -14,6 +14,7 @@ export default function AddStudentPage() {
   const router = useRouter();
   const { organization } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [downloadingQr, setDownloadingQr] = useState(false);
   const [origin, setOrigin] = useState("");
   const [initialData, setInitialData] = useState<Partial<StudentFormData>>({
     name: "",
@@ -65,6 +66,32 @@ export default function AddStudentPage() {
   const qrCodeUrl = joinUrl
     ? `https://quickchart.io/qr?size=220&text=${encodeURIComponent(joinUrl)}`
     : "";
+
+  const handleDownloadQr = async () => {
+    if (!qrCodeUrl || !organization?.slug || downloadingQr) return;
+
+    setDownloadingQr(true);
+    try {
+      const res = await fetch(qrCodeUrl);
+      if (!res.ok) {
+        throw new Error("Failed to generate QR image");
+      }
+
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `${organization.slug}-student-registration-qr.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      alert("Could not download QR code. Please try again.");
+    } finally {
+      setDownloadingQr(false);
+    }
+  };
 
   // ✅ Seat Availability Checker
   const checkSeatAvailability = async (
@@ -163,13 +190,23 @@ export default function AddStudentPage() {
                 />
                 <div className="space-y-2">
                   <p className="max-w-xs break-all text-xs text-slate-500">{joinUrl}</p>
-                  <button
-                    type="button"
-                    onClick={() => navigator.clipboard.writeText(joinUrl)}
-                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-                  >
-                    Copy Form Link
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(joinUrl)}
+                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Copy Form Link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDownloadQr}
+                      disabled={downloadingQr}
+                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                    >
+                      {downloadingQr ? "Downloading..." : "Download QR"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
