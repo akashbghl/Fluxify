@@ -214,6 +214,9 @@ export async function POST(req: NextRequest) {
         await Payment.create({
           student: student._id,
           organizationId,
+          studentName: student.name,
+          studentEmail: student.email || undefined,
+          studentPhone: student.phone || undefined,
           amount: initialPaidAmount,
           mode: paymentMode || "CASH",
           transactionId: transactionId || undefined,
@@ -455,6 +458,9 @@ export async function PATCH(req: NextRequest) {
       await Payment.create({
         student: student._id,
         organizationId,
+        studentName: student.name,
+        studentEmail: student.email || undefined,
+        studentPhone: student.phone || undefined,
         amount: amountPaid,
         mode: data.paymentMode || "CASH",
         transactionId: data.transactionId || undefined,

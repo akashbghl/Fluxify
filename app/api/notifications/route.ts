@@ -127,7 +127,7 @@ export async function GET(req: NextRequest) {
         paidAt: { $gte: recentSince },
         status: "SUCCESS",
       })
-        .select("student amount mode remarks paidAt")
+        .select("student studentName amount mode remarks paidAt")
         .populate("student", "name")
         .sort({ paidAt: -1 })
         .limit(limit)
@@ -242,7 +242,7 @@ export async function GET(req: NextRequest) {
       const studentName =
         payment.student && typeof payment.student === "object" && "name" in payment.student
           ? String(payment.student.name || "Student")
-          : "Student";
+          : String(payment.studentName || "Student");
       const remarks = String(payment.remarks || "");
       const isRenewal = /renew/i.test(remarks);
 
