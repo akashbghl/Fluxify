@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import StudentForm, {
   StudentFormData,
@@ -12,15 +12,43 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function AddStudentPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { organization } = useAuth();
   const [saving, setSaving] = useState(false);
   const [origin, setOrigin] = useState("");
+  const [initialData, setInitialData] = useState<Partial<StudentFormData>>({
+    name: "",
+    email: "",
+    phone: "",
+    plan: "1_MONTH",
+    shiftNames: [],
+  });
   const allowMultiShift = organization?.plan !== "FREE";
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setOrigin(window.location.origin);
+
+      const params = new URLSearchParams(window.location.search);
+      const shiftQuery = params.get("shiftNames") || "";
+      const shiftNames = shiftQuery
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      const planValue = params.get("plan");
+      const validPlans = ["1_MONTH", "3_MONTH", "6_MONTH", "12_MONTH"];
+      const plan =
+        planValue && validPlans.includes(planValue)
+          ? (planValue as StudentFormData["plan"])
+          : "1_MONTH";
+
+      setInitialData({
+        name: params.get("name") || "",
+        email: params.get("email") || "",
+        phone: params.get("phone") || "",
+        plan,
+        shiftNames,
+      });
     }
   }, []);
 
@@ -29,29 +57,6 @@ export default function AddStudentPage() {
       shiftName: shift.shiftName,
       totalSeats: shift.totalSeats,
     })) || [];
-
-  const initialData = useMemo(() => {
-    const shiftQuery = searchParams.get("shiftNames") || "";
-    const shiftNames = shiftQuery
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    const planValue = searchParams.get("plan");
-    const validPlans = ["1_MONTH", "3_MONTH", "6_MONTH", "12_MONTH"];
-    const plan =
-      planValue && validPlans.includes(planValue)
-        ? (planValue as StudentFormData["plan"])
-        : "1_MONTH";
-
-    return {
-      name: searchParams.get("name") || "",
-      email: searchParams.get("email") || "",
-      phone: searchParams.get("phone") || "",
-      plan,
-      shiftNames,
-    };
-  }, [searchParams]);
 
   const joinUrl =
     organization?.slug && origin
