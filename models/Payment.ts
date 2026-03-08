@@ -1,8 +1,11 @@
-import mongoose, { Schema, models, model } from "mongoose";
+import mongoose, { Schema, model, models } from "mongoose";
 
 export interface IPayment {
   student: mongoose.Types.ObjectId;
-  organizationId: mongoose.Types.ObjectId;   // ✅ Added
+  organizationId: mongoose.Types.ObjectId;
+  studentName: string;
+  studentEmail?: string;
+  studentPhone?: string;
   amount: number;
   mode: "CASH" | "UPI" | "CARD" | "NETBANKING";
   status: "SUCCESS" | "PENDING" | "FAILED";
@@ -20,45 +23,50 @@ const PaymentSchema = new Schema<IPayment>(
       required: true,
       index: true,
     },
-
-    /* ===========================
-        Organization Reference
-    ============================ */
     organizationId: {
       type: Schema.Types.ObjectId,
       ref: "Organization",
       required: true,
       index: true,
     },
-
+    // Immutable snapshot for audit trail even if student is deleted later
+    studentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    studentEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+    },
+    studentPhone: {
+      type: String,
+      trim: true,
+    },
     amount: {
       type: Number,
       required: true,
       min: 1,
     },
-
     mode: {
       type: String,
       enum: ["CASH", "UPI", "CARD", "NETBANKING"],
       required: true,
     },
-
     status: {
       type: String,
       enum: ["SUCCESS", "PENDING", "FAILED"],
       default: "SUCCESS",
     },
-
     transactionId: {
       type: String,
       trim: true,
     },
-
     remarks: {
       type: String,
       trim: true,
     },
-
     paidAt: {
       type: Date,
       default: Date.now,
@@ -70,24 +78,18 @@ const PaymentSchema = new Schema<IPayment>(
   }
 );
 
-/* ===========================
-    Indexes for Reports
-=========================== */
-
-// Per org revenue reports
 PaymentSchema.index({
   organizationId: 1,
   paidAt: -1,
 });
 
-// Student payment history
 PaymentSchema.index({
   student: 1,
   paidAt: -1,
 });
 
 const Payment =
-  models.Payment ||
-  model<IPayment>("Payment", PaymentSchema);
+  models.Payment || model<IPayment>("Payment", PaymentSchema);
 
 export default Payment;
+

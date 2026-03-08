@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import StudentForm, {
@@ -13,13 +14,84 @@ export default function AddStudentPage() {
   const router = useRouter();
   const { organization } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [downloadingQr, setDownloadingQr] = useState(false);
+  const [origin, setOrigin] = useState("");
+  const [initialData, setInitialData] = useState<Partial<StudentFormData>>({
+    name: "",
+    email: "",
+    phone: "",
+    plan: "1_MONTH",
+    shiftNames: [],
+  });
   const allowMultiShift = organization?.plan !== "FREE";
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+
+      const params = new URLSearchParams(window.location.search);
+      const shiftQuery = params.get("shiftNames") || "";
+      const shiftNames = shiftQuery
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      const planValue = params.get("plan");
+      const validPlans = ["1_MONTH", "3_MONTH", "6_MONTH", "12_MONTH"];
+      const plan =
+        planValue && validPlans.includes(planValue)
+          ? (planValue as StudentFormData["plan"])
+          : "1_MONTH";
+
+      setInitialData({
+        name: params.get("name") || "",
+        email: params.get("email") || "",
+        phone: params.get("phone") || "",
+        plan,
+        shiftNames,
+      });
+    }
+  }, []);
 
   const shifts =
     organization?.seatConfig?.shifts?.map((shift) => ({
       shiftName: shift.shiftName,
       totalSeats: shift.totalSeats,
     })) || [];
+
+  const joinUrl =
+    organization?.slug && origin
+      ? `${origin}/join/${organization.slug}`
+      : "";
+  const qrCodeUrl = joinUrl
+    ? `https://quickchart.io/qr?size=220&text=${encodeURIComponent(joinUrl)}`
+    : "";
+
+  const handleDownloadQr = async () => {
+    if (!qrCodeUrl || !organization?.slug || downloadingQr) return;
+
+    setDownloadingQr(true);
+    try {
+      const res = await fetch(qrCodeUrl);
+      if (!res.ok) {
+        throw new Error("Failed to generate QR image");
+      }
+
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `${organization.slug}-student-registration-qr.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      alert("Could not download QR code. Please try again.");
+    } finally {
+      setDownloadingQr(false);
+    }
+  };
 
   // ✅ Seat Availability Checker
   const checkSeatAvailability = async (
@@ -99,7 +171,49 @@ export default function AddStudentPage() {
 
         {/* Form */}
         <div className="rounded-xl border bg-white p-5 shadow-sm">
+          {joinUrl && (
+            <div className="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <h2 className="text-sm font-semibold text-slate-900">
+                Student Self Registration QR
+              </h2>
+              <p className="mt-1 text-xs text-slate-600">
+                Students can scan this QR and submit details. You will receive an email to verify and register them.
+              </p>
+              <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                <Image
+                  src={qrCodeUrl}
+                  alt="Student registration QR code"
+                  width={128}
+                  height={128}
+                  unoptimized
+                  className="h-32 w-32 rounded-lg border border-slate-200 bg-white p-1"
+                />
+                <div className="space-y-2">
+                  <p className="max-w-xs break-all text-xs text-slate-500">{joinUrl}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(joinUrl)}
+                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Copy Form Link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDownloadQr}
+                      disabled={downloadingQr}
+                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                    >
+                      {downloadingQr ? "Downloading..." : "Download QR"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <StudentForm
+            initialData={initialData}
             onSubmit={handleCreateStudent}
             loading={saving}
             shifts={shifts}

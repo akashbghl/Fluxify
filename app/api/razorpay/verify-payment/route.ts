@@ -3,6 +3,9 @@ import crypto from "crypto";
 import { connectDB } from "@/lib/db";
 import Subscription from "@/models/Subscription";
 import Organization from "@/models/Organization";
+import User from "@/models/User";
+import { sendMail } from "@/lib/mail";
+import { getSubscriptionActivatedEmailTemplate } from "@/lib/emailTemplates";
 
 export async function POST(req: NextRequest) {
   try {
@@ -93,12 +96,39 @@ export async function POST(req: NextRequest) {
       }
     );
 
+    const [organization, manager] = await Promise.all([
+      Organization.findById(subscription.organization).select("name"),
+      User.findOne({
+        organizationId: subscription.organization,
+        role: "MANAGER",
+      }).select("name email"),
+    ]);
+
+    if (manager?.email) {
+      const template = getSubscriptionActivatedEmailTemplate({
+        recipientName: manager.name || "Manager",
+        organizationName: organization?.name || "Your Organization",
+        plan: subscription.plan,
+        startDate,
+        endDate,
+        amount: subscription.amount,
+        currency: subscription.currency,
+        paymentId: razorpay_payment_id,
+      });
+
+      await sendMail({
+        to: manager.email,
+        subject: template.subject,
+        html: template.html,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       message: "Subscription activated successfully",
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Verify Payment Error:", error);
 
     return NextResponse.json(
