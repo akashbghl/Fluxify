@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fluxifyio.vercel.app";
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fluxify.akashbaghel.in";
   const now = new Date();
 
   return [

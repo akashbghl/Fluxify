@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://fluxifyio.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://fluxify.akashbaghel.in"),
   title: {
     default: "Fluxify | Library Management Software",
     template: "%s | Fluxify",
@@ -34,14 +34,14 @@ export const metadata: Metadata = {
     "library dashboard",
   ],
   alternates: {
-    canonical: "https://fluxifyio.vercel.app",
+    canonical: "https://fluxify.akashbaghel.in",
   },
   openGraph: {
     type: "website",
-    url: "https://fluxifyio.vercel.app",
+    url: "https://fluxify.akashbaghel.in",
     siteName: "Fluxify",
     title: "Fluxify | Library Management Software",
-    images: ["https://fluxifyio.vercel.app/NLogo.jpg"
+    images: ["https://fluxify.akashbaghel.in/NLogo.jpg"
     ],
     description:
       "Fluxify helps libraries manage students, seats, shifts, attendance, payments, reminders, and analytics from one dashboard.",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     description:
       "Fluxify helps libraries manage students, seats, shifts, attendance, payments, reminders, and analytics from one dashboard.",
     creator: "@akashbaghel",
-    images: ["https://fluxifyio.vercel.app/NLogo.jpg"],
+    images: ["https://fluxify.akashbaghel.in/NLogo.jpg"],
     },
   robots: {
     index: true,
