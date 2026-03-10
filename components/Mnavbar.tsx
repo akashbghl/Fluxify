@@ -1,14 +1,16 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { Moon, Sparkles, Sun } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Moon, Sun } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type ThemeMode = "light" | "dark";
 
 const Mnavbar = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuth();
 
   const [theme, setTheme] = useState<ThemeMode>(() => {
@@ -26,6 +28,13 @@ const Mnavbar = () => {
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
+
+  const navLinks = [
+    { label: "Features", href: pathname === "/" ? "#features" : "/#features" },
+    { label: "How it works", href: pathname === "/" ? "#how" : "/#how" },
+    { label: "Pricing", href: pathname === "/" ? "#pricing" : "/#pricing" },
+    { label: "Downloads", href: "/downloads" },
+  ];
 
   return (
     <header className="sticky top-0 z-40 backdrop-blur max-md:border-b border-slate-200/20">
@@ -45,18 +54,15 @@ const Mnavbar = () => {
         </div>
 
         <nav className="hidden items-center gap-6 text-sm text-slate-700 md:flex dark:text-slate-200">
-          <a href="#features" className="transition hover:text-slate-900 dark:hover:text-white">
-            Features
-          </a>
-          <a href="#how" className="transition hover:text-slate-900 dark:hover:text-white">
-            How it works
-          </a>
-          <a href="#pricing" className="transition hover:text-slate-900 dark:hover:text-white">
-            Pricing
-          </a>
-          <a href="#app" className="transition hover:text-slate-900 dark:hover:text-white">
-            Downloads
-          </a>
+          {navLinks.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="transition hover:text-slate-900 dark:hover:text-white"
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-1 max-md:gap-4">
@@ -99,22 +105,5 @@ const Mnavbar = () => {
     </header>
   );
 };
-
-function PrimaryButton({
-  children,
-  onClick,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2 rounded-lg bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-    >
-      {children}
-    </button>
-  );
-}
 
 export default Mnavbar;
