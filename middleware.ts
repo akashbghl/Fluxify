@@ -5,6 +5,7 @@ export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
 
   const isPublicApi = pathname.startsWith("/api/auth");
+  const isStudentRequestRoute = pathname === "/api/public/student-request";
   const isDashboard = pathname.startsWith("/dashboard");
   const isApiRoute = pathname.startsWith("/api");
   const isWebhookRoute = pathname === "/api/razorpay/webhook";
@@ -25,6 +26,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();   // allow without auth
   }
 
+  if (isStudentRequestRoute) {
+    return NextResponse.next();
+  }
 
   // Allow auth API
   if (isPublicApi) {
