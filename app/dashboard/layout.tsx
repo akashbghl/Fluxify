@@ -19,7 +19,7 @@ export default function DashboardLayout({
         {/* Page Content */}
         <main className="relative flex-1 overflow-y-auto bg-slate-50 p-3 sm:p-4 md:p-6">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.08),_transparent_40%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.08),_transparent_35%)]" />
-          <div className="relative">{children}</div>
+          <div className="relative text-black">{children}</div>
         </main>
       </div>
     </div>
